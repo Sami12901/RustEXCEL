@@ -51,7 +51,10 @@ impl Worksheet {
     }
 
     pub fn col_width(&self, col: u32) -> f32 {
-        self.col_widths.get(&col).copied().unwrap_or(Self::DEFAULT_COL_WIDTH)
+        self.col_widths
+            .get(&col)
+            .copied()
+            .unwrap_or(Self::DEFAULT_COL_WIDTH)
     }
 
     pub fn set_col_width(&mut self, col: u32, width: f32) {
@@ -59,7 +62,10 @@ impl Worksheet {
     }
 
     pub fn row_height(&self, row: u32) -> f32 {
-        self.row_heights.get(&row).copied().unwrap_or(Self::DEFAULT_ROW_HEIGHT)
+        self.row_heights
+            .get(&row)
+            .copied()
+            .unwrap_or(Self::DEFAULT_ROW_HEIGHT)
     }
 
     pub fn set_row_height(&mut self, row: u32, height: f32) {
@@ -71,7 +77,10 @@ impl Worksheet {
     }
 
     pub fn get_cell_value(&self, coord: CellCoord) -> CellValue {
-        self.cells.get(coord).map(|c| c.value.clone()).unwrap_or(CellValue::Empty)
+        self.cells
+            .get(coord)
+            .map(|c| c.value.clone())
+            .unwrap_or(CellValue::Empty)
     }
 
     pub fn set_cell(&mut self, coord: CellCoord, state: CellState) {
@@ -118,7 +127,8 @@ impl Workbook {
 
     pub fn with_default_sheet() -> Self {
         let mut wb = Self::new();
-        wb.add_sheet("Sheet1").expect("Default sheet creation cannot fail");
+        wb.add_sheet("Sheet1")
+            .expect("Default sheet creation cannot fail");
         wb
     }
 
@@ -148,7 +158,11 @@ impl Workbook {
         if trimmed.is_empty() {
             return Err(WorkbookError::InvalidSheetName(name.to_string()));
         }
-        if self.sheets.iter().any(|s| s.name.eq_ignore_ascii_case(trimmed)) {
+        if self
+            .sheets
+            .iter()
+            .any(|s| s.name.eq_ignore_ascii_case(trimmed))
+        {
             return Err(WorkbookError::DuplicateSheetName(trimmed.to_string()));
         }
 
@@ -163,11 +177,18 @@ impl Workbook {
         if trimmed.is_empty() {
             return Err(WorkbookError::InvalidSheetName(new_name.to_string()));
         }
-        if self.sheets.iter().any(|s| &s.id != id && s.name.eq_ignore_ascii_case(trimmed)) {
+        if self
+            .sheets
+            .iter()
+            .any(|s| &s.id != id && s.name.eq_ignore_ascii_case(trimmed))
+        {
             return Err(WorkbookError::DuplicateSheetName(trimmed.to_string()));
         }
 
-        let sheet = self.sheets.iter_mut().find(|s| &s.id == id)
+        let sheet = self
+            .sheets
+            .iter_mut()
+            .find(|s| &s.id == id)
             .ok_or_else(|| WorkbookError::SheetNotFound(id.to_string()))?;
         sheet.name = trimmed.to_string();
         Ok(())
@@ -178,7 +199,10 @@ impl Workbook {
             return Err(WorkbookError::CannotRemoveOnlySheet);
         }
 
-        let pos = self.sheets.iter().position(|s| &s.id == id)
+        let pos = self
+            .sheets
+            .iter()
+            .position(|s| &s.id == id)
             .ok_or_else(|| WorkbookError::SheetNotFound(id.to_string()))?;
 
         self.sheets.remove(pos);
@@ -197,11 +221,15 @@ impl Workbook {
     }
 
     pub fn get_sheet_by_name(&self, name: &str) -> Option<&Worksheet> {
-        self.sheets.iter().find(|s| s.name.eq_ignore_ascii_case(name))
+        self.sheets
+            .iter()
+            .find(|s| s.name.eq_ignore_ascii_case(name))
     }
 
     pub fn get_sheet_by_name_mut(&mut self, name: &str) -> Option<&mut Worksheet> {
-        self.sheets.iter_mut().find(|s| s.name.eq_ignore_ascii_case(name))
+        self.sheets
+            .iter_mut()
+            .find(|s| s.name.eq_ignore_ascii_case(name))
     }
 }
 

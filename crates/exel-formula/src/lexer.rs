@@ -104,7 +104,7 @@ impl<'a> Lexer<'a> {
                     let num = self.lex_number(start_pos)?;
                     tokens.push(Token::new(TokenKind::Number(num), start_pos));
                 }
-                '.' if self.peek_ahead(1).map_or(false, |c| c.is_ascii_digit()) => {
+                '.' if self.peek_ahead(1).is_some_and(|c| c.is_ascii_digit()) => {
                     let num = self.lex_number(start_pos)?;
                     tokens.push(Token::new(TokenKind::Number(num), start_pos));
                 }

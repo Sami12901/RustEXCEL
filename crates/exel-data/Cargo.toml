@@ -7,5 +7,7 @@ license.workspace = true
 
 [dependencies]
 exel-core.workspace = true
+exel-cell.workspace = true
+exel-workbook.workspace = true
 serde.workspace = true
 thiserror.workspace = true

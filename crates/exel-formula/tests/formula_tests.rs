@@ -65,13 +65,31 @@ fn test_sheet_names_with_escaped_quotes() {
 #[test]
 fn test_comparison_operators_and_not_equal() {
     let expr1 = parse_formula("=A1 <> B1").unwrap();
-    assert!(matches!(expr1, Expression::BinaryOp { op: BinaryOp::NotEq, .. }));
+    assert!(matches!(
+        expr1,
+        Expression::BinaryOp {
+            op: BinaryOp::NotEq,
+            ..
+        }
+    ));
 
     let expr2 = parse_formula("=A1 <= B1").unwrap();
-    assert!(matches!(expr2, Expression::BinaryOp { op: BinaryOp::Lte, .. }));
+    assert!(matches!(
+        expr2,
+        Expression::BinaryOp {
+            op: BinaryOp::Lte,
+            ..
+        }
+    ));
 
     let expr3 = parse_formula("=A1 >= B1").unwrap();
-    assert!(matches!(expr3, Expression::BinaryOp { op: BinaryOp::Gte, .. }));
+    assert!(matches!(
+        expr3,
+        Expression::BinaryOp {
+            op: BinaryOp::Gte,
+            ..
+        }
+    ));
 }
 
 #[test]
@@ -91,7 +109,11 @@ fn test_nested_function_calls() {
 #[test]
 fn test_multiple_unary_negations() {
     let expr = parse_formula("=- -A1").unwrap();
-    if let Expression::UnaryOp { op: op1, expr: inner } = expr {
+    if let Expression::UnaryOp {
+        op: op1,
+        expr: inner,
+    } = expr
+    {
         assert_eq!(op1, UnaryOp::Minus);
         if let Expression::UnaryOp { op: op2, .. } = *inner {
             assert_eq!(op2, UnaryOp::Minus);

@@ -26,8 +26,12 @@ pub enum CsvError {
 
 /// Sniffs the delimiter (',', '\t', ';', '|') with the highest consistency across lines.
 pub fn sniff_delimiter(sample: &str) -> u8 {
-    let candidates = [b',', b'\t', b';', b'|'];
-    let lines: Vec<&str> = sample.lines().take(25).filter(|l| !l.trim().is_empty()).collect();
+    let candidates = *b",\t;|";
+    let lines: Vec<&str> = sample
+        .lines()
+        .take(25)
+        .filter(|l| !l.trim().is_empty())
+        .collect();
 
     if lines.is_empty() {
         return b',';
@@ -156,9 +160,7 @@ pub fn import_csv_reader<R: Read>(
         .flexible(true)
         .from_reader(buffer.as_bytes());
 
-    let mut row_idx = options.start_coord.row;
-
-    for result in csv_rdr.records() {
+    for (row_idx, result) in (options.start_coord.row..).zip(csv_rdr.records()) {
         let record = result?;
         for (col_offset, field) in record.iter().enumerate() {
             let col_idx = options.start_coord.col + col_offset as u32;
@@ -180,7 +182,6 @@ pub fn import_csv_reader<R: Read>(
                 sheet.set_cell(coord, state);
             }
         }
-        row_idx += 1;
     }
 
     Ok(sheet)
@@ -195,7 +196,10 @@ pub fn import_csv_str(csv_str: &str, options: &CsvImportOptions) -> Result<Workb
 }
 
 /// Imports a CSV file from disk into a Workbook.
-pub fn import_csv_file<P: AsRef<Path>>(path: P, options: &CsvImportOptions) -> Result<Workbook, CsvError> {
+pub fn import_csv_file<P: AsRef<Path>>(
+    path: P,
+    options: &CsvImportOptions,
+) -> Result<Workbook, CsvError> {
     let file = std::fs::File::open(path.as_ref())?;
     let mut opts = options.clone();
     if opts.sheet_name.is_none() {
@@ -385,7 +389,14 @@ pub fn export_json_records(sheet: &Worksheet) -> Result<String, CsvError> {
     for col in range.start.col..=range.end.col {
         let coord = CellCoord::must_new(range.start.row, col);
         let name = sheet.get_cell_value(coord).to_display_string();
-        headers.push((col, if name.is_empty() { format!("Col{}", col) } else { name }));
+        headers.push((
+            col,
+            if name.is_empty() {
+                format!("Col{}", col)
+            } else {
+                name
+            },
+        ));
     }
 
     let mut records = Vec::new();
@@ -446,7 +457,8 @@ impl SpreadsheetReader for CsvHandler {
             delimiter: Some(self.delimiter),
             ..Default::default()
         };
-        let sheet = import_csv_reader(bytes, &opts).map_err(|e| IoError::Serialization(e.to_string()))?;
+        let sheet =
+            import_csv_reader(bytes, &opts).map_err(|e| IoError::Serialization(e.to_string()))?;
         let mut wb = Workbook::new();
         wb.sheets.push(sheet);
         Ok(wb)
@@ -497,7 +509,10 @@ mod tests {
         assert_eq!(infer_cell_value("-42.5").0, CellValue::Number(-42.5));
         assert_eq!(infer_cell_value("TRUE").0, CellValue::Boolean(true));
         assert_eq!(infer_cell_value("false").0, CellValue::Boolean(false));
-        assert_eq!(infer_cell_value("Hello World").0, CellValue::Text("Hello World".into()));
+        assert_eq!(
+            infer_cell_value("Hello World").0,
+            CellValue::Text("Hello World".into())
+        );
 
         let (val, formula) = infer_cell_value("=SUM(A1:A10)");
         assert_eq!(val, CellValue::Empty);
@@ -517,9 +532,18 @@ mod tests {
         let wb = import_csv_str(csv_data, &opts).unwrap();
 
         let sheet = wb.active_sheet();
-        assert_eq!(sheet.get_cell_value(CellCoord::from_a1("A1").unwrap()), CellValue::Text("Item".into()));
-        assert_eq!(sheet.get_cell_value(CellCoord::from_a1("B2").unwrap()), CellValue::Number(10.0));
-        assert_eq!(sheet.get_cell_value(CellCoord::from_a1("C2").unwrap()), CellValue::Number(1.5));
+        assert_eq!(
+            sheet.get_cell_value(CellCoord::from_a1("A1").unwrap()),
+            CellValue::Text("Item".into())
+        );
+        assert_eq!(
+            sheet.get_cell_value(CellCoord::from_a1("B2").unwrap()),
+            CellValue::Number(10.0)
+        );
+        assert_eq!(
+            sheet.get_cell_value(CellCoord::from_a1("C2").unwrap()),
+            CellValue::Number(1.5)
+        );
 
         let export_opts = CsvExportOptions::default();
         let exported = export_csv_string(&wb, &export_opts).unwrap();
@@ -535,10 +559,22 @@ mod tests {
         ]"#;
 
         let sheet = import_json_str(json_input, "Grades").unwrap();
-        assert_eq!(sheet.get_cell_value(CellCoord::from_a1("A1").unwrap()), CellValue::Text("Name".into()));
-        assert_eq!(sheet.get_cell_value(CellCoord::from_a1("A2").unwrap()), CellValue::Text("Alice".into()));
-        assert_eq!(sheet.get_cell_value(CellCoord::from_a1("B2").unwrap()), CellValue::Boolean(true));
-        assert_eq!(sheet.get_cell_value(CellCoord::from_a1("C2").unwrap()), CellValue::Number(95.0));
+        assert_eq!(
+            sheet.get_cell_value(CellCoord::from_a1("A1").unwrap()),
+            CellValue::Text("Name".into())
+        );
+        assert_eq!(
+            sheet.get_cell_value(CellCoord::from_a1("A2").unwrap()),
+            CellValue::Text("Alice".into())
+        );
+        assert_eq!(
+            sheet.get_cell_value(CellCoord::from_a1("B2").unwrap()),
+            CellValue::Boolean(true)
+        );
+        assert_eq!(
+            sheet.get_cell_value(CellCoord::from_a1("C2").unwrap()),
+            CellValue::Number(95.0)
+        );
 
         let exported_json = export_json_records(&sheet).unwrap();
         assert!(exported_json.contains("Alice"));

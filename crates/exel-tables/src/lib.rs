@@ -67,10 +67,7 @@ pub enum ColumnFilter {
     /// Excel checklist filter (only rows whose cell value matches one in the set).
     Values(Vec<CellValue>),
     /// Numeric comparison filter.
-    NumericComparison {
-        op: ComparisonOp,
-        target: f64,
-    },
+    NumericComparison { op: ComparisonOp, target: f64 },
     /// Text contains / starts with / ends with filter.
     TextContains {
         pattern: String,
@@ -262,12 +259,16 @@ impl Table {
 
     /// Get column definition by name (case-insensitive).
     pub fn column_by_name(&self, name: &str) -> Option<&TableColumn> {
-        self.columns.iter().find(|c| c.name.eq_ignore_ascii_case(name))
+        self.columns
+            .iter()
+            .find(|c| c.name.eq_ignore_ascii_case(name))
     }
 
     /// 0-based column index by name.
     pub fn column_index(&self, name: &str) -> Option<usize> {
-        self.columns.iter().position(|c| c.name.eq_ignore_ascii_case(name))
+        self.columns
+            .iter()
+            .position(|c| c.name.eq_ignore_ascii_case(name))
     }
 
     /// Check if a given row is visible according to all active column filters.
@@ -374,21 +375,21 @@ impl Table {
         // Special items: #All, #Headers, #Data, #Totals
         match unbracketed {
             "#All" => Ok(self.range),
-            "#Headers" => self
-                .header_range()
-                .ok_or_else(|| TableError::InvalidStructuredReference("Table has no header row".into())),
-            "#Totals" => self
-                .total_range()
-                .ok_or_else(|| TableError::InvalidStructuredReference("Table has no total row".into())),
-            "#Data" => self
-                .data_range()
-                .ok_or_else(|| TableError::InvalidStructuredReference("Table has no data rows".into())),
+            "#Headers" => self.header_range().ok_or_else(|| {
+                TableError::InvalidStructuredReference("Table has no header row".into())
+            }),
+            "#Totals" => self.total_range().ok_or_else(|| {
+                TableError::InvalidStructuredReference("Table has no total row".into())
+            }),
+            "#Data" => self.data_range().ok_or_else(|| {
+                TableError::InvalidStructuredReference("Table has no data rows".into())
+            }),
             col_ref => {
                 // Check if this-row operator '@' is present e.g. "@Amount"
                 if let Some(col_name) = col_ref.strip_prefix('@') {
-                    let col_idx = self
-                        .column_index(col_name)
-                        .ok_or_else(|| TableError::ColumnNotFound(col_name.to_string(), self.name.clone()))?;
+                    let col_idx = self.column_index(col_name).ok_or_else(|| {
+                        TableError::ColumnNotFound(col_name.to_string(), self.name.clone())
+                    })?;
                     let row = current_row.ok_or_else(|| {
                         TableError::InvalidStructuredReference(
                             "This-row reference '@' requires active cell row context".into(),
@@ -399,12 +400,12 @@ impl Table {
                     Ok(CellRange::single_cell(coord))
                 } else {
                     // Regular column data reference e.g. "Amount"
-                    let col_idx = self
-                        .column_index(col_ref)
-                        .ok_or_else(|| TableError::ColumnNotFound(col_ref.to_string(), self.name.clone()))?;
-                    let data_range = self
-                        .data_range()
-                        .ok_or_else(|| TableError::InvalidStructuredReference("Table has no data rows".into()))?;
+                    let col_idx = self.column_index(col_ref).ok_or_else(|| {
+                        TableError::ColumnNotFound(col_ref.to_string(), self.name.clone())
+                    })?;
+                    let data_range = self.data_range().ok_or_else(|| {
+                        TableError::InvalidStructuredReference("Table has no data rows".into())
+                    })?;
                     let col_num = self.range.start.col + col_idx as u32;
                     Ok(CellRange::new(
                         CellCoord::must_new(data_range.start.row, col_num),
@@ -433,7 +434,11 @@ impl TableManager {
 
     pub fn add_table(&mut self, mut table: Table) -> Result<u32, TableError> {
         Table::validate_name(&table.name)?;
-        if self.tables.iter().any(|t| t.name.eq_ignore_ascii_case(&table.name)) {
+        if self
+            .tables
+            .iter()
+            .any(|t| t.name.eq_ignore_ascii_case(&table.name))
+        {
             return Err(TableError::DuplicateTableName(table.name));
         }
 
@@ -450,24 +455,36 @@ impl TableManager {
     }
 
     pub fn remove_table(&mut self, name: &str) -> Option<Table> {
-        let pos = self.tables.iter().position(|t| t.name.eq_ignore_ascii_case(name))?;
+        let pos = self
+            .tables
+            .iter()
+            .position(|t| t.name.eq_ignore_ascii_case(name))?;
         Some(self.tables.remove(pos))
     }
 
     pub fn get_table(&self, name: &str) -> Option<&Table> {
-        self.tables.iter().find(|t| t.name.eq_ignore_ascii_case(name))
+        self.tables
+            .iter()
+            .find(|t| t.name.eq_ignore_ascii_case(name))
     }
 
     pub fn get_table_mut(&mut self, name: &str) -> Option<&mut Table> {
-        self.tables.iter_mut().find(|t| t.name.eq_ignore_ascii_case(name))
+        self.tables
+            .iter_mut()
+            .find(|t| t.name.eq_ignore_ascii_case(name))
     }
 
     pub fn find_table_at(&self, sheet_id: &SheetId, coord: CellCoord) -> Option<&Table> {
-        self.tables.iter().find(|t| &t.sheet_id == sheet_id && t.range.contains(coord))
+        self.tables
+            .iter()
+            .find(|t| &t.sheet_id == sheet_id && t.range.contains(coord))
     }
 
     pub fn tables_on_sheet(&self, sheet_id: &SheetId) -> Vec<&Table> {
-        self.tables.iter().filter(|t| &t.sheet_id == sheet_id).collect()
+        self.tables
+            .iter()
+            .filter(|t| &t.sheet_id == sheet_id)
+            .collect()
     }
 
     pub fn len(&self) -> usize {
@@ -525,11 +542,20 @@ mod tests {
         .unwrap();
 
         // Populate values
-        sheet.set_cell_value(CellCoord::from_a1("A2").unwrap(), CellValue::Text("A".into()));
+        sheet.set_cell_value(
+            CellCoord::from_a1("A2").unwrap(),
+            CellValue::Text("A".into()),
+        );
         sheet.set_cell_value(CellCoord::from_a1("B2").unwrap(), CellValue::Number(100.0));
-        sheet.set_cell_value(CellCoord::from_a1("A3").unwrap(), CellValue::Text("B".into()));
+        sheet.set_cell_value(
+            CellCoord::from_a1("A3").unwrap(),
+            CellValue::Text("B".into()),
+        );
         sheet.set_cell_value(CellCoord::from_a1("B3").unwrap(), CellValue::Number(200.0));
-        sheet.set_cell_value(CellCoord::from_a1("A4").unwrap(), CellValue::Text("C".into()));
+        sheet.set_cell_value(
+            CellCoord::from_a1("A4").unwrap(),
+            CellValue::Text("C".into()),
+        );
         sheet.set_cell_value(CellCoord::from_a1("B4").unwrap(), CellValue::Number(300.0));
 
         table.columns[1].total_function = Some(TotalFunction::Sum);
@@ -570,13 +596,24 @@ mod tests {
         let sheet_id = SheetId::new("Sheet1");
         let range = CellRange::from_a1("A1:B10").unwrap();
 
-        let table = Table::new(0, "Table1", sheet_id.clone(), range, vec!["ColA".into(), "ColB".into()]).unwrap();
+        let table = Table::new(
+            0,
+            "Table1",
+            sheet_id.clone(),
+            range,
+            vec!["ColA".into(), "ColB".into()],
+        )
+        .unwrap();
         let id = mgr.add_table(table).unwrap();
         assert_eq!(id, 1);
         assert_eq!(mgr.len(), 1);
 
         assert!(mgr.get_table("Table1").is_some());
-        assert!(mgr.find_table_at(&sheet_id, CellCoord::from_a1("A5").unwrap()).is_some());
-        assert!(mgr.find_table_at(&sheet_id, CellCoord::from_a1("C5").unwrap()).is_none());
+        assert!(mgr
+            .find_table_at(&sheet_id, CellCoord::from_a1("A5").unwrap())
+            .is_some());
+        assert!(mgr
+            .find_table_at(&sheet_id, CellCoord::from_a1("C5").unwrap())
+            .is_none());
     }
 }

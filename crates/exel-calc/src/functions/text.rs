@@ -35,7 +35,11 @@ pub fn fn_concat(
     Ok(CellValue::Text(out))
 }
 
-pub fn fn_left(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_left(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.is_empty() || args.len() > 2 {
         return Err(CellError::Value);
     }
@@ -85,7 +89,11 @@ pub fn fn_right(
     Ok(CellValue::Text(result))
 }
 
-pub fn fn_mid(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_mid(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.len() != 3 {
         return Err(CellError::Value);
     }
@@ -107,7 +115,11 @@ pub fn fn_mid(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<Ce
     Ok(CellValue::Text(result))
 }
 
-pub fn fn_len(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_len(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.len() != 1 {
         return Err(CellError::Value);
     }
@@ -142,7 +154,11 @@ pub fn fn_lower(
     Ok(CellValue::Text(text.to_lowercase()))
 }
 
-pub fn fn_trim(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_trim(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.len() != 1 {
         return Err(CellError::Value);
     }

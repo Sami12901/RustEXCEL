@@ -6,7 +6,7 @@ use exel_cell::{CellError, CellState, CellValue};
 use exel_core::{CellCoord, SheetId};
 use exel_dependency_graph::{CellNode, DependencyGraph};
 use exel_formula::{parse_formula, Expression};
-use exel_workbook::Workbook;
+use exel_workbook::{Workbook, Worksheet};
 use std::collections::HashMap;
 
 /// Summary result of a recalculation pass.
@@ -357,6 +357,47 @@ impl CalcEngine {
         self.dep_graph.mark_dirty(&node);
         self.recalculate_workbook(wb)
     }
+
+    /// Evaluates an AST expression in the given context.
+    pub fn evaluate(&self, ctx: &CalcContext, expr: &Expression) -> Result<CellValue, CellError> {
+        evaluate_expression(&self.registry, ctx, expr)
+    }
+
+    /// Evaluates a formula string in the given context.
+    pub fn evaluate_formula(
+        &self,
+        ctx: &CalcContext,
+        formula: &str,
+    ) -> Result<CellValue, CellError> {
+        let expr = parse_formula(formula).map_err(|_| CellError::Value)?;
+        self.evaluate(ctx, &expr)
+    }
+
+    /// Recalculates all formulas belonging to an isolated Worksheet.
+    pub fn recalculate_sheet_isolated(&mut self, sheet: &mut Worksheet) -> RecalcResult {
+        let mut wb = Workbook::new();
+        wb.sheets.push(sheet.clone());
+        let res = self.recalculate_workbook(&mut wb);
+        if let Some(recalc_sheet) = wb.sheets.into_iter().next() {
+            *sheet = recalc_sheet;
+        }
+        res
+    }
+
+    /// Evaluates a standalone formula in the context of an isolated Worksheet.
+    pub fn evaluate_worksheet_formula(&self, sheet: &Worksheet, formula: &str) -> CellValue {
+        let mut wb = Workbook::new();
+        wb.sheets.push(sheet.clone());
+        let dummy_coord = CellCoord::must_new(1, 1);
+        let ctx = CalcContext::with_coord(&wb, &sheet.name, dummy_coord);
+        match parse_formula(formula) {
+            Ok(expr) => match self.evaluate(&ctx, &expr) {
+                Ok(val) => val,
+                Err(err) => CellValue::Error(err),
+            },
+            Err(_) => CellValue::Error(CellError::Value),
+        }
+    }
 }
 
 impl EngineAdapter for CalcEngine {
@@ -400,12 +441,22 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::approx_constant)]
     fn test_math_functions() {
         let mut wb = Workbook::with_default_sheet();
         let sheet = wb.active_sheet_mut();
-        sheet.set_cell(CellCoord::must_new(1, 1), CellState::from_value(CellValue::Number(10.0))); // A1
-        sheet.set_cell(CellCoord::must_new(2, 1), CellState::from_value(CellValue::Number(20.0))); // A2
-        sheet.set_cell(CellCoord::must_new(3, 1), CellState::from_value(CellValue::Number(30.0))); // A3
+        sheet.set_cell(
+            CellCoord::must_new(1, 1),
+            CellState::from_value(CellValue::Number(10.0)),
+        ); // A1
+        sheet.set_cell(
+            CellCoord::must_new(2, 1),
+            CellState::from_value(CellValue::Number(20.0)),
+        ); // A2
+        sheet.set_cell(
+            CellCoord::must_new(3, 1),
+            CellState::from_value(CellValue::Number(30.0)),
+        ); // A3
 
         let engine = CalcEngine::new();
         let ctx = CalcContext::new(&wb, "Sheet1");
@@ -459,15 +510,21 @@ mod tests {
         let ctx = CalcContext::new(&wb, "Sheet1");
 
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=IF(10 > 5, "YES", "NO")"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=IF(10 > 5, "YES", "NO")"#)
+                .unwrap(),
             CellValue::Text("YES".to_string())
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=IF(10 < 5, "YES", "NO")"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=IF(10 < 5, "YES", "NO")"#)
+                .unwrap(),
             CellValue::Text("NO".to_string())
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, "=AND(TRUE, 1, 5 > 2)").unwrap(),
+            engine
+                .evaluate_formula(&ctx, "=AND(TRUE, 1, 5 > 2)")
+                .unwrap(),
             CellValue::Boolean(true)
         );
         assert_eq!(
@@ -483,11 +540,15 @@ mod tests {
             CellValue::Boolean(false)
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=IFERROR(10 / 0, "Error Occurred")"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=IFERROR(10 / 0, "Error Occurred")"#)
+                .unwrap(),
             CellValue::Text("Error Occurred".to_string())
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=IFERROR(10 / 2, "Error Occurred")"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=IFERROR(10 / 2, "Error Occurred")"#)
+                .unwrap(),
             CellValue::Number(5.0)
         );
     }
@@ -496,10 +557,22 @@ mod tests {
     fn test_statistical_functions() {
         let mut wb = Workbook::with_default_sheet();
         let sheet = wb.active_sheet_mut();
-        sheet.set_cell(CellCoord::must_new(1, 1), CellState::from_value(CellValue::Number(10.0)));
-        sheet.set_cell(CellCoord::must_new(2, 1), CellState::from_value(CellValue::Number(20.0)));
-        sheet.set_cell(CellCoord::must_new(3, 1), CellState::from_value(CellValue::Number(30.0)));
-        sheet.set_cell(CellCoord::must_new(4, 1), CellState::from_value(CellValue::Text("Not a number".into())));
+        sheet.set_cell(
+            CellCoord::must_new(1, 1),
+            CellState::from_value(CellValue::Number(10.0)),
+        );
+        sheet.set_cell(
+            CellCoord::must_new(2, 1),
+            CellState::from_value(CellValue::Number(20.0)),
+        );
+        sheet.set_cell(
+            CellCoord::must_new(3, 1),
+            CellState::from_value(CellValue::Number(30.0)),
+        );
+        sheet.set_cell(
+            CellCoord::must_new(4, 1),
+            CellState::from_value(CellValue::Text("Not a number".into())),
+        );
 
         let engine = CalcEngine::new();
         let ctx = CalcContext::new(&wb, "Sheet1");
@@ -533,23 +606,33 @@ mod tests {
         let ctx = CalcContext::new(&wb, "Sheet1");
 
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=CONCAT("Hello", " ", "World")"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=CONCAT("Hello", " ", "World")"#)
+                .unwrap(),
             CellValue::Text("Hello World".to_string())
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=LEFT("Spreadsheet", 6)"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=LEFT("Spreadsheet", 6)"#)
+                .unwrap(),
             CellValue::Text("Spread".to_string())
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=RIGHT("Spreadsheet", 5)"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=RIGHT("Spreadsheet", 5)"#)
+                .unwrap(),
             CellValue::Text("sheet".to_string())
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=MID("Rust EXEL", 6, 4)"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=MID("Rust EXEL", 6, 4)"#)
+                .unwrap(),
             CellValue::Text("EXEL".to_string())
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=LEN("Rust EXEL")"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=LEN("Rust EXEL")"#)
+                .unwrap(),
             CellValue::Number(9.0)
         );
         assert_eq!(
@@ -561,7 +644,9 @@ mod tests {
             CellValue::Text("hello".to_string())
         );
         assert_eq!(
-            engine.evaluate_formula(&ctx, r#"=TRIM("   too   many    spaces   ")"#).unwrap(),
+            engine
+                .evaluate_formula(&ctx, r#"=TRIM("   too   many    spaces   ")"#)
+                .unwrap(),
             CellValue::Text("too many spaces".to_string())
         );
     }
@@ -574,19 +659,39 @@ mod tests {
         // A1: 101, B1: "Alice"
         // A2: 102, B2: "Bob"
         // A3: 103, B3: "Charlie"
-        sheet.set_cell(CellCoord::must_new(1, 1), CellState::from_value(CellValue::Number(101.0)));
-        sheet.set_cell(CellCoord::must_new(1, 2), CellState::from_value(CellValue::Text("Alice".into())));
-        sheet.set_cell(CellCoord::must_new(2, 1), CellState::from_value(CellValue::Number(102.0)));
-        sheet.set_cell(CellCoord::must_new(2, 2), CellState::from_value(CellValue::Text("Bob".into())));
-        sheet.set_cell(CellCoord::must_new(3, 1), CellState::from_value(CellValue::Number(103.0)));
-        sheet.set_cell(CellCoord::must_new(3, 2), CellState::from_value(CellValue::Text("Charlie".into())));
+        sheet.set_cell(
+            CellCoord::must_new(1, 1),
+            CellState::from_value(CellValue::Number(101.0)),
+        );
+        sheet.set_cell(
+            CellCoord::must_new(1, 2),
+            CellState::from_value(CellValue::Text("Alice".into())),
+        );
+        sheet.set_cell(
+            CellCoord::must_new(2, 1),
+            CellState::from_value(CellValue::Number(102.0)),
+        );
+        sheet.set_cell(
+            CellCoord::must_new(2, 2),
+            CellState::from_value(CellValue::Text("Bob".into())),
+        );
+        sheet.set_cell(
+            CellCoord::must_new(3, 1),
+            CellState::from_value(CellValue::Number(103.0)),
+        );
+        sheet.set_cell(
+            CellCoord::must_new(3, 2),
+            CellState::from_value(CellValue::Text("Charlie".into())),
+        );
 
         let engine = CalcEngine::new();
         let ctx = CalcContext::new(&wb, "Sheet1");
 
         // VLOOKUP exact match
         assert_eq!(
-            engine.evaluate_formula(&ctx, "=VLOOKUP(102, A1:B3, 2, FALSE)").unwrap(),
+            engine
+                .evaluate_formula(&ctx, "=VLOOKUP(102, A1:B3, 2, FALSE)")
+                .unwrap(),
             CellValue::Text("Bob".to_string())
         );
         // VLOOKUP not found
@@ -597,13 +702,17 @@ mod tests {
 
         // MATCH exact match
         assert_eq!(
-            engine.evaluate_formula(&ctx, "=MATCH(102, A1:A3, 0)").unwrap(),
+            engine
+                .evaluate_formula(&ctx, "=MATCH(102, A1:A3, 0)")
+                .unwrap(),
             CellValue::Number(2.0)
         );
 
         // INDEX lookup
         assert_eq!(
-            engine.evaluate_formula(&ctx, "=INDEX(A1:B3, 3, 2)").unwrap(),
+            engine
+                .evaluate_formula(&ctx, "=INDEX(A1:B3, 3, 2)")
+                .unwrap(),
             CellValue::Text("Charlie".to_string())
         );
     }
@@ -637,8 +746,14 @@ mod tests {
         engine.update_cell_formula(&mut wb, &sheet_id, d1, "=E1 + 1".into());
         engine.update_cell_formula(&mut wb, &sheet_id, e1, "=D1 + 1".into());
 
-        assert_eq!(wb.sheets[0].get_cell_value(d1), CellValue::Error(CellError::Circular));
-        assert_eq!(wb.sheets[0].get_cell_value(e1), CellValue::Error(CellError::Circular));
+        assert_eq!(
+            wb.sheets[0].get_cell_value(d1),
+            CellValue::Error(CellError::Circular)
+        );
+        assert_eq!(
+            wb.sheets[0].get_cell_value(e1),
+            CellValue::Error(CellError::Circular)
+        );
     }
 
     #[test]
@@ -656,6 +771,9 @@ mod tests {
         let b1 = CellCoord::must_new(1, 2);
         engine.update_cell_formula(&mut wb, &s2_id, b1, "=Sheet1!A1 * 1.5".into());
 
-        assert_eq!(wb.get_sheet(&s2_id).unwrap().get_cell_value(b1), CellValue::Number(150.0));
+        assert_eq!(
+            wb.get_sheet(&s2_id).unwrap().get_cell_value(b1),
+            CellValue::Number(150.0)
+        );
     }
 }

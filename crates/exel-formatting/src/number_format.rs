@@ -4,16 +4,16 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub enum NegativeNumberFormat {
     #[default]
-    Minus,        // -123.45
-    Parentheses,  // (123.45)
-    RedMinus,     // [Red]-123.45
+    Minus, // -123.45
+    Parentheses,    // (123.45)
+    RedMinus,       // [Red]-123.45
     RedParentheses, // [Red](123.45)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub enum DateFormat {
     #[default]
-    YyyyMmDd,      // yyyy-mm-dd
+    YyyyMmDd, // yyyy-mm-dd
     MmDdYyyy,      // mm/dd/yyyy
     DdMmYyyy,      // dd/mm/yyyy
     YyyyMmDdSlash, // yyyy/mm/dd
@@ -24,22 +24,23 @@ pub enum DateFormat {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub enum TimeFormat {
     #[default]
-    HhMmSs24,      // hh:mm:ss
-    HhMm24,        // hh:mm
-    HhMmSs12,      // hh:mm:ss AM/PM
-    HhMm12,        // hh:mm AM/PM
+    HhMmSs24, // hh:mm:ss
+    HhMm24,   // hh:mm
+    HhMmSs12, // hh:mm:ss AM/PM
+    HhMm12,   // hh:mm AM/PM
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub enum DateTimeFormat {
     #[default]
-    Iso8601,       // yyyy-mm-dd hh:mm:ss
-    UsStandard,    // mm/dd/yyyy hh:mm:ss
+    Iso8601, // yyyy-mm-dd hh:mm:ss
+    UsStandard, // mm/dd/yyyy hh:mm:ss
 }
 
 /// Rich NumberFormat specification.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub enum NumberFormat {
+    #[default]
     General,
     Number {
         decimal_places: u8,
@@ -59,12 +60,6 @@ pub enum NumberFormat {
     DateTime(DateTimeFormat),
     Text,
     Custom(String),
-}
-
-impl Default for NumberFormat {
-    fn default() -> Self {
-        Self::General
-    }
 }
 
 impl NumberFormat {
@@ -180,7 +175,9 @@ impl NumberFormat {
             } else {
                 0
             };
-            return Self::Percentage { decimal_places: decimals };
+            return Self::Percentage {
+                decimal_places: decimals,
+            };
         }
 
         // Date check
@@ -261,7 +258,10 @@ impl NumberFormat {
                     format!("{:.0}", val)
                 } else {
                     let formatted = format!("{:.6}", val);
-                    formatted.trim_end_matches('0').trim_end_matches('.').to_string()
+                    formatted
+                        .trim_end_matches('0')
+                        .trim_end_matches('.')
+                        .to_string()
                 }
             }
             NumberFormat::Number {
@@ -271,7 +271,11 @@ impl NumberFormat {
             } => {
                 let is_neg = val < 0.0;
                 let abs_val = val.abs();
-                let num_str = format_with_decimals_and_sep(abs_val, *decimal_places, *use_thousands_separator);
+                let num_str = format_with_decimals_and_sep(
+                    abs_val,
+                    *decimal_places,
+                    *use_thousands_separator,
+                );
                 format_negative(&num_str, is_neg, *negative_format)
             }
             NumberFormat::Currency {
@@ -343,7 +347,7 @@ fn format_with_decimals_and_sep(val: f64, decimals: u8, use_sep: bool) -> String
     let len = chars.len();
 
     for (i, &ch) in chars.iter().enumerate() {
-        if i > 0 && (len - i) % 3 == 0 {
+        if i > 0 && (len - i).is_multiple_of(3) {
             with_commas.push(',');
         }
         with_commas.push(ch);
@@ -362,7 +366,9 @@ fn format_negative(s: &str, is_neg: bool, neg_fmt: NegativeNumberFormat) -> Stri
     }
     match neg_fmt {
         NegativeNumberFormat::Minus | NegativeNumberFormat::RedMinus => format!("-{}", s),
-        NegativeNumberFormat::Parentheses | NegativeNumberFormat::RedParentheses => format!("({})", s),
+        NegativeNumberFormat::Parentheses | NegativeNumberFormat::RedParentheses => {
+            format!("({})", s)
+        }
     }
 }
 
@@ -397,7 +403,8 @@ pub fn datetime_to_excel_serial(dt: &NaiveDateTime) -> f64 {
     let days = dt.date().signed_duration_since(base).num_days();
     let adjusted_days = if days >= 59 { days + 2 } else { days + 1 };
     let time = dt.time();
-    let frac = (time.hour() as f64 * 3600.0 + time.minute() as f64 * 60.0 + time.second() as f64) / 86400.0;
+    let frac = (time.hour() as f64 * 3600.0 + time.minute() as f64 * 60.0 + time.second() as f64)
+        / 86400.0;
     adjusted_days as f64 + frac
 }
 

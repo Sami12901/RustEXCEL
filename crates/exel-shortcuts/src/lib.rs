@@ -78,8 +78,8 @@ pub enum ShortcutAction {
     CommitAndMoveRight,
     CommitAndMoveLeft,
     ToggleAbsoluteReference, // F4
-    AutoSum,                  // Alt+=
-    ClearContents,            // Delete
+    AutoSum,                 // Alt+=
+    ClearContents,           // Delete
     Backspace,
 
     // Formatting & View
@@ -636,7 +636,11 @@ impl ShortcutRegistry {
         // Iterate through registered shortcuts
         for (chord, action) in &self.bindings {
             if let Some(egui_key) = chord.key.to_egui_key() {
-                if input.key_pressed(egui_key) && chord.modifiers.matches_egui(&input.modifiers, self.platform) {
+                if input.key_pressed(egui_key)
+                    && chord
+                        .modifiers
+                        .matches_egui(&input.modifiers, self.platform)
+                {
                     return Some(*action);
                 }
             }
@@ -649,7 +653,11 @@ impl ShortcutRegistry {
         for (chord, mapped_action) in &self.bindings {
             if *mapped_action == action {
                 if let Some(egui_key) = chord.key.to_egui_key() {
-                    if input.key_pressed(egui_key) && chord.modifiers.matches_egui(&input.modifiers, self.platform) {
+                    if input.key_pressed(egui_key)
+                        && chord
+                            .modifiers
+                            .matches_egui(&input.modifiers, self.platform)
+                    {
                         return true;
                     }
                 }
@@ -672,50 +680,122 @@ impl ShortcutRegistry {
         };
 
         // File operations
-        self.bind(ShortcutAction::NewWorkbook, KeyChord::new(primary_mod, Key::N));
-        self.bind(ShortcutAction::OpenWorkbook, KeyChord::new(primary_mod, Key::O));
-        self.bind(ShortcutAction::SaveWorkbook, KeyChord::new(primary_mod, Key::S));
-        self.bind(ShortcutAction::SaveAsWorkbook, KeyChord::new(primary_shift, Key::S));
+        self.bind(
+            ShortcutAction::NewWorkbook,
+            KeyChord::new(primary_mod, Key::N),
+        );
+        self.bind(
+            ShortcutAction::OpenWorkbook,
+            KeyChord::new(primary_mod, Key::O),
+        );
+        self.bind(
+            ShortcutAction::SaveWorkbook,
+            KeyChord::new(primary_mod, Key::S),
+        );
+        self.bind(
+            ShortcutAction::SaveAsWorkbook,
+            KeyChord::new(primary_shift, Key::S),
+        );
 
         // History & Clipboard
         self.bind(ShortcutAction::Undo, KeyChord::new(primary_mod, Key::Z));
         self.bind(ShortcutAction::Redo, KeyChord::new(primary_mod, Key::Y));
         if self.platform.uses_command_key() {
             // Secondary Redo on Mac: Cmd+Shift+Z
-            self.bindings.insert(KeyChord::new(Modifiers::CMD_SHIFT, Key::Z), ShortcutAction::Redo);
+            self.bindings.insert(
+                KeyChord::new(Modifiers::CMD_SHIFT, Key::Z),
+                ShortcutAction::Redo,
+            );
         }
         self.bind(ShortcutAction::Cut, KeyChord::new(primary_mod, Key::X));
         self.bind(ShortcutAction::Copy, KeyChord::new(primary_mod, Key::C));
         self.bind(ShortcutAction::Paste, KeyChord::new(primary_mod, Key::V));
 
         // Basic Navigation
-        self.bind(ShortcutAction::MoveCursor(Direction::Up), KeyChord::key(Key::ArrowUp));
-        self.bind(ShortcutAction::MoveCursor(Direction::Down), KeyChord::key(Key::ArrowDown));
-        self.bind(ShortcutAction::MoveCursor(Direction::Left), KeyChord::key(Key::ArrowLeft));
-        self.bind(ShortcutAction::MoveCursor(Direction::Right), KeyChord::key(Key::ArrowRight));
+        self.bind(
+            ShortcutAction::MoveCursor(Direction::Up),
+            KeyChord::key(Key::ArrowUp),
+        );
+        self.bind(
+            ShortcutAction::MoveCursor(Direction::Down),
+            KeyChord::key(Key::ArrowDown),
+        );
+        self.bind(
+            ShortcutAction::MoveCursor(Direction::Left),
+            KeyChord::key(Key::ArrowLeft),
+        );
+        self.bind(
+            ShortcutAction::MoveCursor(Direction::Right),
+            KeyChord::key(Key::ArrowRight),
+        );
 
         // Extended Selection (Shift + Arrows)
-        self.bind(ShortcutAction::ExtendSelection(Direction::Up), KeyChord::shift(Key::ArrowUp));
-        self.bind(ShortcutAction::ExtendSelection(Direction::Down), KeyChord::shift(Key::ArrowDown));
-        self.bind(ShortcutAction::ExtendSelection(Direction::Left), KeyChord::shift(Key::ArrowLeft));
-        self.bind(ShortcutAction::ExtendSelection(Direction::Right), KeyChord::shift(Key::ArrowRight));
+        self.bind(
+            ShortcutAction::ExtendSelection(Direction::Up),
+            KeyChord::shift(Key::ArrowUp),
+        );
+        self.bind(
+            ShortcutAction::ExtendSelection(Direction::Down),
+            KeyChord::shift(Key::ArrowDown),
+        );
+        self.bind(
+            ShortcutAction::ExtendSelection(Direction::Left),
+            KeyChord::shift(Key::ArrowLeft),
+        );
+        self.bind(
+            ShortcutAction::ExtendSelection(Direction::Right),
+            KeyChord::shift(Key::ArrowRight),
+        );
 
         // Jump Navigation (Ctrl + Arrows)
-        self.bind(ShortcutAction::JumpCursor(Direction::Up), KeyChord::new(primary_mod, Key::ArrowUp));
-        self.bind(ShortcutAction::JumpCursor(Direction::Down), KeyChord::new(primary_mod, Key::ArrowDown));
-        self.bind(ShortcutAction::JumpCursor(Direction::Left), KeyChord::new(primary_mod, Key::ArrowLeft));
-        self.bind(ShortcutAction::JumpCursor(Direction::Right), KeyChord::new(primary_mod, Key::ArrowRight));
+        self.bind(
+            ShortcutAction::JumpCursor(Direction::Up),
+            KeyChord::new(primary_mod, Key::ArrowUp),
+        );
+        self.bind(
+            ShortcutAction::JumpCursor(Direction::Down),
+            KeyChord::new(primary_mod, Key::ArrowDown),
+        );
+        self.bind(
+            ShortcutAction::JumpCursor(Direction::Left),
+            KeyChord::new(primary_mod, Key::ArrowLeft),
+        );
+        self.bind(
+            ShortcutAction::JumpCursor(Direction::Right),
+            KeyChord::new(primary_mod, Key::ArrowRight),
+        );
 
         // Extended Jump Navigation (Ctrl + Shift + Arrows)
-        self.bind(ShortcutAction::ExtendJumpSelection(Direction::Up), KeyChord::new(primary_shift, Key::ArrowUp));
-        self.bind(ShortcutAction::ExtendJumpSelection(Direction::Down), KeyChord::new(primary_shift, Key::ArrowDown));
-        self.bind(ShortcutAction::ExtendJumpSelection(Direction::Left), KeyChord::new(primary_shift, Key::ArrowLeft));
-        self.bind(ShortcutAction::ExtendJumpSelection(Direction::Right), KeyChord::new(primary_shift, Key::ArrowRight));
+        self.bind(
+            ShortcutAction::ExtendJumpSelection(Direction::Up),
+            KeyChord::new(primary_shift, Key::ArrowUp),
+        );
+        self.bind(
+            ShortcutAction::ExtendJumpSelection(Direction::Down),
+            KeyChord::new(primary_shift, Key::ArrowDown),
+        );
+        self.bind(
+            ShortcutAction::ExtendJumpSelection(Direction::Left),
+            KeyChord::new(primary_shift, Key::ArrowLeft),
+        );
+        self.bind(
+            ShortcutAction::ExtendJumpSelection(Direction::Right),
+            KeyChord::new(primary_shift, Key::ArrowRight),
+        );
 
         // Selection & Edge jumps
-        self.bind(ShortcutAction::SelectAll, KeyChord::new(primary_mod, Key::A));
-        self.bind(ShortcutAction::GoToHome, KeyChord::new(primary_mod, Key::Home));
-        self.bind(ShortcutAction::GoToEnd, KeyChord::new(primary_mod, Key::End));
+        self.bind(
+            ShortcutAction::SelectAll,
+            KeyChord::new(primary_mod, Key::A),
+        );
+        self.bind(
+            ShortcutAction::GoToHome,
+            KeyChord::new(primary_mod, Key::Home),
+        );
+        self.bind(
+            ShortcutAction::GoToEnd,
+            KeyChord::new(primary_mod, Key::End),
+        );
         self.bind(ShortcutAction::PageUp, KeyChord::key(Key::PageUp));
         self.bind(ShortcutAction::PageDown, KeyChord::key(Key::PageDown));
 
@@ -726,16 +806,25 @@ impl ShortcutRegistry {
         self.bind(ShortcutAction::CommitAndMoveUp, KeyChord::shift(Key::Enter));
         self.bind(ShortcutAction::CommitAndMoveRight, KeyChord::key(Key::Tab));
         self.bind(ShortcutAction::CommitAndMoveLeft, KeyChord::shift(Key::Tab));
-        self.bind(ShortcutAction::ToggleAbsoluteReference, KeyChord::key(Key::F4)); // F4 repeat / abs toggle
+        self.bind(
+            ShortcutAction::ToggleAbsoluteReference,
+            KeyChord::key(Key::F4),
+        ); // F4 repeat / abs toggle
         self.bind(ShortcutAction::AutoSum, KeyChord::alt(Key::Equals)); // Alt+= AutoSum
         self.bind(ShortcutAction::ClearContents, KeyChord::key(Key::Delete));
         self.bind(ShortcutAction::Backspace, KeyChord::key(Key::Backspace));
 
         // Formatting
-        self.bind(ShortcutAction::FormatCells, KeyChord::new(primary_mod, Key::Num1));
+        self.bind(
+            ShortcutAction::FormatCells,
+            KeyChord::new(primary_mod, Key::Num1),
+        );
         self.bind(ShortcutAction::Bold, KeyChord::new(primary_mod, Key::B));
         self.bind(ShortcutAction::Italic, KeyChord::new(primary_mod, Key::I));
-        self.bind(ShortcutAction::Underline, KeyChord::new(primary_mod, Key::U));
+        self.bind(
+            ShortcutAction::Underline,
+            KeyChord::new(primary_mod, Key::U),
+        );
         self.bind(ShortcutAction::Find, KeyChord::new(primary_mod, Key::F));
         self.bind(ShortcutAction::Replace, KeyChord::new(primary_mod, Key::H));
         self.bind(ShortcutAction::Recalculate, KeyChord::key(Key::F9));
@@ -831,16 +920,22 @@ mod tests {
         assert!(!copy_chord.modifiers.mac_cmd);
         assert_eq!(copy_chord.to_display_string(Platform::Windows), "Ctrl+C");
 
-        let autosum_chord = registry.primary_shortcut_for(ShortcutAction::AutoSum).unwrap();
+        let autosum_chord = registry
+            .primary_shortcut_for(ShortcutAction::AutoSum)
+            .unwrap();
         assert_eq!(autosum_chord.key, Key::Equals);
         assert!(autosum_chord.modifiers.alt);
         assert_eq!(autosum_chord.to_display_string(Platform::Windows), "Alt+=");
 
-        let edit_chord = registry.primary_shortcut_for(ShortcutAction::EditCell).unwrap();
+        let edit_chord = registry
+            .primary_shortcut_for(ShortcutAction::EditCell)
+            .unwrap();
         assert_eq!(edit_chord.key, Key::F2);
         assert_eq!(edit_chord.to_display_string(Platform::Windows), "F2");
 
-        let f4_chord = registry.primary_shortcut_for(ShortcutAction::ToggleAbsoluteReference).unwrap();
+        let f4_chord = registry
+            .primary_shortcut_for(ShortcutAction::ToggleAbsoluteReference)
+            .unwrap();
         assert_eq!(f4_chord.key, Key::F4);
     }
 

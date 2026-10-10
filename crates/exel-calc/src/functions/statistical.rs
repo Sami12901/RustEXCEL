@@ -57,7 +57,11 @@ pub fn fn_average(
     Ok(CellValue::Number(sum / count as f64))
 }
 
-pub fn fn_min(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_min(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     let mut min_val: Option<f64> = None;
 
     for arg in args {
@@ -99,7 +103,11 @@ pub fn fn_min(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<Ce
     Ok(CellValue::Number(min_val.unwrap_or(0.0)))
 }
 
-pub fn fn_max(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_max(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     let mut max_val: Option<f64> = None;
 
     for arg in args {

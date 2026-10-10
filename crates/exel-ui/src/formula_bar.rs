@@ -125,9 +125,8 @@ impl<'a> FormulaBar<'a> {
             };
 
             let remaining_w = ui.available_width() - 30.0;
-            let formula_edit_resp = ui.add_sized(
-                [remaining_w.max(100.0), editor_height],
-                |ui: &mut Ui| {
+            let formula_edit_resp =
+                ui.add_sized([remaining_w.max(100.0), editor_height], |ui: &mut Ui| {
                     if self.state.formula_expanded {
                         ui.add(
                             egui::TextEdit::multiline(&mut self.state.formula_buffer)
@@ -140,8 +139,7 @@ impl<'a> FormulaBar<'a> {
                                 .font(egui::TextStyle::Monospace),
                         )
                     }
-                },
-            );
+                });
 
             // Handle Enter key inside formula bar to commit
             if formula_edit_resp.lost_focus() && ui.input(|i| i.key_pressed(Key::Enter)) {

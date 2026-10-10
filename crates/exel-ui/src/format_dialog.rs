@@ -1,12 +1,11 @@
 use crate::state::{CellFormatTab, SpreadsheetAction, SpreadsheetUiState};
 use crate::theme::SpreadsheetTheme;
 use egui::{
-    vec2, Align2, Color32, ComboBox, Grid, Layout, RichText, Stroke, StrokeKind, Ui,
-    Window,
+    vec2, Align2, Color32, ComboBox, Grid, Layout, RichText, Stroke, StrokeKind, Ui, Window,
 };
 use exel_formatting::{
-    Border, BorderSide, BorderStyle, Color as FmtColor, Fill,
-    HorizontalAlignment, NumberFormat, VerticalAlignment,
+    Border, BorderSide, BorderStyle, Color as FmtColor, Fill, HorizontalAlignment, NumberFormat,
+    VerticalAlignment,
 };
 
 /// Format Cells Modal Dialog.
@@ -49,10 +48,7 @@ impl<'a> FormatCellsDialog<'a> {
                         for (tab, label) in tabs {
                             let is_active = self.state.format_cells_active_tab == tab;
                             if ui
-                                .selectable_label(
-                                    is_active,
-                                    RichText::new(label).strong(),
-                                )
+                                .selectable_label(is_active, RichText::new(label).strong())
                                 .clicked()
                             {
                                 self.state.format_cells_active_tab = tab;
@@ -83,10 +79,7 @@ impl<'a> FormatCellsDialog<'a> {
                             self.state.show_format_cells_dialog = false;
                         }
 
-                        if ui
-                            .button(RichText::new("OK").strong())
-                            .clicked()
-                        {
+                        if ui.button(RichText::new("OK").strong()).clicked() {
                             result_action = Some(SpreadsheetAction::ApplyStyle {
                                 range: self.state.selection,
                                 style: self.state.pending_cell_style.clone(),
@@ -120,14 +113,36 @@ impl<'a> FormatCellsDialog<'a> {
                 for cat in categories {
                     if ui.button(cat).clicked() {
                         match cat {
-                            "General" => self.state.pending_cell_style.number_format = NumberFormat::General,
-                            "Number" => self.state.pending_cell_style.number_format = NumberFormat::number(2, false),
-                            "Currency" => self.state.pending_cell_style.number_format = NumberFormat::currency("$", 2),
-                            "Accounting" => self.state.pending_cell_style.number_format = NumberFormat::currency("$", 2),
-                            "Date" => self.state.pending_cell_style.number_format = NumberFormat::Date(exel_formatting::DateFormat::default()),
-                            "Time" => self.state.pending_cell_style.number_format = NumberFormat::Time(exel_formatting::TimeFormat::default()),
-                            "Percentage" => self.state.pending_cell_style.number_format = NumberFormat::percentage(2),
-                            "Text" => self.state.pending_cell_style.number_format = NumberFormat::Text,
+                            "General" => {
+                                self.state.pending_cell_style.number_format = NumberFormat::General
+                            }
+                            "Number" => {
+                                self.state.pending_cell_style.number_format =
+                                    NumberFormat::number(2, false)
+                            }
+                            "Currency" => {
+                                self.state.pending_cell_style.number_format =
+                                    NumberFormat::currency("$", 2)
+                            }
+                            "Accounting" => {
+                                self.state.pending_cell_style.number_format =
+                                    NumberFormat::currency("$", 2)
+                            }
+                            "Date" => {
+                                self.state.pending_cell_style.number_format =
+                                    NumberFormat::Date(exel_formatting::DateFormat::default())
+                            }
+                            "Time" => {
+                                self.state.pending_cell_style.number_format =
+                                    NumberFormat::Time(exel_formatting::TimeFormat::default())
+                            }
+                            "Percentage" => {
+                                self.state.pending_cell_style.number_format =
+                                    NumberFormat::percentage(2)
+                            }
+                            "Text" => {
+                                self.state.pending_cell_style.number_format = NumberFormat::Text
+                            }
                             _ => {}
                         }
                     }
@@ -147,7 +162,11 @@ impl<'a> FormatCellsDialog<'a> {
                     .format_number(sample_val);
 
                 ui.group(|ui| {
-                    ui.label(RichText::new(preview).heading().color(SpreadsheetTheme::EXCEL_GREEN));
+                    ui.label(
+                        RichText::new(preview)
+                            .heading()
+                            .color(SpreadsheetTheme::EXCEL_GREEN),
+                    );
                 });
 
                 ui.add_space(10.0);
@@ -162,57 +181,67 @@ impl<'a> FormatCellsDialog<'a> {
             ui.label(RichText::new("Text Alignment").strong());
             ui.add_space(8.0);
 
-            Grid::new("alignment_grid").num_columns(2).spacing([20.0, 10.0]).show(ui, |ui| {
-                ui.label("Horizontal:");
-                ComboBox::from_id_salt("horiz_align")
-                    .selected_text(match self.state.pending_cell_style.alignment.horizontal {
-                        HorizontalAlignment::General => "General",
-                        HorizontalAlignment::Left => "Left (Indent)",
-                        HorizontalAlignment::Center => "Center",
-                        HorizontalAlignment::Right => "Right",
-                        HorizontalAlignment::Fill => "Fill",
-                        HorizontalAlignment::Justify => "Justify",
-                        HorizontalAlignment::CenterContinuous => "Center Across Selection",
-                        HorizontalAlignment::Distributed => "Distributed",
-                    })
-                    .show_ui(ui, |ui| {
-                        if ui.selectable_label(false, "General").clicked() {
-                            self.state.pending_cell_style.alignment.horizontal = HorizontalAlignment::General;
-                        }
-                        if ui.selectable_label(false, "Left").clicked() {
-                            self.state.pending_cell_style.alignment.horizontal = HorizontalAlignment::Left;
-                        }
-                        if ui.selectable_label(false, "Center").clicked() {
-                            self.state.pending_cell_style.alignment.horizontal = HorizontalAlignment::Center;
-                        }
-                        if ui.selectable_label(false, "Right").clicked() {
-                            self.state.pending_cell_style.alignment.horizontal = HorizontalAlignment::Right;
-                        }
-                    });
-                ui.end_row();
+            Grid::new("alignment_grid")
+                .num_columns(2)
+                .spacing([20.0, 10.0])
+                .show(ui, |ui| {
+                    ui.label("Horizontal:");
+                    ComboBox::from_id_salt("horiz_align")
+                        .selected_text(match self.state.pending_cell_style.alignment.horizontal {
+                            HorizontalAlignment::General => "General",
+                            HorizontalAlignment::Left => "Left (Indent)",
+                            HorizontalAlignment::Center => "Center",
+                            HorizontalAlignment::Right => "Right",
+                            HorizontalAlignment::Fill => "Fill",
+                            HorizontalAlignment::Justify => "Justify",
+                            HorizontalAlignment::CenterContinuous => "Center Across Selection",
+                            HorizontalAlignment::Distributed => "Distributed",
+                        })
+                        .show_ui(ui, |ui| {
+                            if ui.selectable_label(false, "General").clicked() {
+                                self.state.pending_cell_style.alignment.horizontal =
+                                    HorizontalAlignment::General;
+                            }
+                            if ui.selectable_label(false, "Left").clicked() {
+                                self.state.pending_cell_style.alignment.horizontal =
+                                    HorizontalAlignment::Left;
+                            }
+                            if ui.selectable_label(false, "Center").clicked() {
+                                self.state.pending_cell_style.alignment.horizontal =
+                                    HorizontalAlignment::Center;
+                            }
+                            if ui.selectable_label(false, "Right").clicked() {
+                                self.state.pending_cell_style.alignment.horizontal =
+                                    HorizontalAlignment::Right;
+                            }
+                        });
+                    ui.end_row();
 
-                ui.label("Vertical:");
-                ComboBox::from_id_salt("vert_align")
-                    .selected_text(match self.state.pending_cell_style.alignment.vertical {
-                        VerticalAlignment::Top => "Top",
-                        VerticalAlignment::Center => "Center",
-                        VerticalAlignment::Bottom => "Bottom",
-                        VerticalAlignment::Justify => "Justify",
-                        VerticalAlignment::Distributed => "Distributed",
-                    })
-                    .show_ui(ui, |ui| {
-                        if ui.selectable_label(false, "Top").clicked() {
-                            self.state.pending_cell_style.alignment.vertical = VerticalAlignment::Top;
-                        }
-                        if ui.selectable_label(false, "Center").clicked() {
-                            self.state.pending_cell_style.alignment.vertical = VerticalAlignment::Center;
-                        }
-                        if ui.selectable_label(false, "Bottom").clicked() {
-                            self.state.pending_cell_style.alignment.vertical = VerticalAlignment::Bottom;
-                        }
-                    });
-                ui.end_row();
-            });
+                    ui.label("Vertical:");
+                    ComboBox::from_id_salt("vert_align")
+                        .selected_text(match self.state.pending_cell_style.alignment.vertical {
+                            VerticalAlignment::Top => "Top",
+                            VerticalAlignment::Center => "Center",
+                            VerticalAlignment::Bottom => "Bottom",
+                            VerticalAlignment::Justify => "Justify",
+                            VerticalAlignment::Distributed => "Distributed",
+                        })
+                        .show_ui(ui, |ui| {
+                            if ui.selectable_label(false, "Top").clicked() {
+                                self.state.pending_cell_style.alignment.vertical =
+                                    VerticalAlignment::Top;
+                            }
+                            if ui.selectable_label(false, "Center").clicked() {
+                                self.state.pending_cell_style.alignment.vertical =
+                                    VerticalAlignment::Center;
+                            }
+                            if ui.selectable_label(false, "Bottom").clicked() {
+                                self.state.pending_cell_style.alignment.vertical =
+                                    VerticalAlignment::Bottom;
+                            }
+                        });
+                    ui.end_row();
+                });
 
             ui.add_space(15.0);
             ui.label(RichText::new("Text Control").strong());
@@ -229,7 +258,13 @@ impl<'a> FormatCellsDialog<'a> {
                 // Font Family
                 ui.vertical(|ui| {
                     ui.label(RichText::new("Font:").strong());
-                    for font_name in ["Calibri", "Segoe UI", "Arial", "Times New Roman", "Consolas"] {
+                    for font_name in [
+                        "Calibri",
+                        "Segoe UI",
+                        "Arial",
+                        "Times New Roman",
+                        "Consolas",
+                    ] {
                         if ui
                             .selectable_label(
                                 self.state.pending_cell_style.font.name == font_name,
@@ -247,10 +282,14 @@ impl<'a> FormatCellsDialog<'a> {
                 // Font Style (Bold / Italic)
                 ui.vertical(|ui| {
                     ui.label(RichText::new("Font style:").strong());
-                    let is_regular = !self.state.pending_cell_style.font.bold && !self.state.pending_cell_style.font.italic;
-                    let is_italic = !self.state.pending_cell_style.font.bold && self.state.pending_cell_style.font.italic;
-                    let is_bold = self.state.pending_cell_style.font.bold && !self.state.pending_cell_style.font.italic;
-                    let is_both = self.state.pending_cell_style.font.bold && self.state.pending_cell_style.font.italic;
+                    let is_regular = !self.state.pending_cell_style.font.bold
+                        && !self.state.pending_cell_style.font.italic;
+                    let is_italic = !self.state.pending_cell_style.font.bold
+                        && self.state.pending_cell_style.font.italic;
+                    let is_bold = self.state.pending_cell_style.font.bold
+                        && !self.state.pending_cell_style.font.italic;
+                    let is_both = self.state.pending_cell_style.font.bold
+                        && self.state.pending_cell_style.font.italic;
 
                     if ui.selectable_label(is_regular, "Regular").clicked() {
                         self.state.pending_cell_style.font.bold = false;
@@ -277,7 +316,10 @@ impl<'a> FormatCellsDialog<'a> {
                     ui.label(RichText::new("Size:").strong());
                     let current_size = self.state.pending_cell_style.font.size as i32;
                     for size in [9, 10, 11, 12, 14, 16, 18, 20, 24, 28] {
-                        if ui.selectable_label(current_size == size, format!("{}", size)).clicked() {
+                        if ui
+                            .selectable_label(current_size == size, format!("{}", size))
+                            .clicked()
+                        {
                             self.state.pending_cell_style.font.size = size as f32;
                         }
                     }
@@ -300,7 +342,8 @@ impl<'a> FormatCellsDialog<'a> {
                     self.state.pending_cell_style.border = Border::none();
                 }
                 if ui.button("Outline").clicked() {
-                    self.state.pending_cell_style.border = Border::all(BorderStyle::Thin, FmtColor::BLACK);
+                    self.state.pending_cell_style.border =
+                        Border::all(BorderStyle::Thin, FmtColor::BLACK);
                 }
                 if ui.button("Bottom Double").clicked() {
                     let mut b = Border::none();
@@ -317,16 +360,19 @@ impl<'a> FormatCellsDialog<'a> {
                     if has_top {
                         self.state.pending_cell_style.border.top = BorderSide::none();
                     } else {
-                        self.state.pending_cell_style.border.top = BorderSide::new(BorderStyle::Thin, FmtColor::BLACK);
+                        self.state.pending_cell_style.border.top =
+                            BorderSide::new(BorderStyle::Thin, FmtColor::BLACK);
                     }
                 }
 
-                let has_bottom = self.state.pending_cell_style.border.bottom.style != BorderStyle::None;
+                let has_bottom =
+                    self.state.pending_cell_style.border.bottom.style != BorderStyle::None;
                 if ui.selectable_label(has_bottom, "Bottom").clicked() {
                     if has_bottom {
                         self.state.pending_cell_style.border.bottom = BorderSide::none();
                     } else {
-                        self.state.pending_cell_style.border.bottom = BorderSide::new(BorderStyle::Thin, FmtColor::BLACK);
+                        self.state.pending_cell_style.border.bottom =
+                            BorderSide::new(BorderStyle::Thin, FmtColor::BLACK);
                     }
                 }
 
@@ -335,16 +381,19 @@ impl<'a> FormatCellsDialog<'a> {
                     if has_left {
                         self.state.pending_cell_style.border.left = BorderSide::none();
                     } else {
-                        self.state.pending_cell_style.border.left = BorderSide::new(BorderStyle::Thin, FmtColor::BLACK);
+                        self.state.pending_cell_style.border.left =
+                            BorderSide::new(BorderStyle::Thin, FmtColor::BLACK);
                     }
                 }
 
-                let has_right = self.state.pending_cell_style.border.right.style != BorderStyle::None;
+                let has_right =
+                    self.state.pending_cell_style.border.right.style != BorderStyle::None;
                 if ui.selectable_label(has_right, "Right").clicked() {
                     if has_right {
                         self.state.pending_cell_style.border.right = BorderSide::none();
                     } else {
-                        self.state.pending_cell_style.border.right = BorderSide::new(BorderStyle::Thin, FmtColor::BLACK);
+                        self.state.pending_cell_style.border.right =
+                            BorderSide::new(BorderStyle::Thin, FmtColor::BLACK);
                     }
                 }
             });
@@ -382,12 +431,22 @@ impl<'a> FormatCellsDialog<'a> {
             let preview_rect = ui.available_rect_before_wrap();
             let sample_rect = egui::Rect::from_min_size(preview_rect.min, vec2(150.0, 30.0));
 
-            let bg = self.state.pending_cell_style.fill.fg_color.or(self.state.pending_cell_style.fill.bg_color).map(|c| {
-                Color32::from_rgb(c.r, c.g, c.b)
-            }).unwrap_or(Color32::WHITE);
+            let bg = self
+                .state
+                .pending_cell_style
+                .fill
+                .fg_color
+                .or(self.state.pending_cell_style.fill.bg_color)
+                .map(|c| Color32::from_rgb(c.r, c.g, c.b))
+                .unwrap_or(Color32::WHITE);
 
             ui.painter().rect_filled(sample_rect, 0.0, bg);
-            ui.painter().rect_stroke(sample_rect, 0.0, Stroke::new(1.0, Color32::GRAY), StrokeKind::Inside);
+            ui.painter().rect_stroke(
+                sample_rect,
+                0.0,
+                Stroke::new(1.0, Color32::GRAY),
+                StrokeKind::Inside,
+            );
         });
     }
 }

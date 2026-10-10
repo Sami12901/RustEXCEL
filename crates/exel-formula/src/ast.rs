@@ -175,7 +175,11 @@ impl RangeRef {
     }
 
     pub fn to_a1(&self) -> String {
-        let range_part = format!("{}:{}", self.start.to_a1_no_sheet(), self.end.to_a1_no_sheet());
+        let range_part = format!(
+            "{}:{}",
+            self.start.to_a1_no_sheet(),
+            self.end.to_a1_no_sheet()
+        );
         match &self.sheet {
             Some(sheet) => {
                 if sheet.contains(' ') || sheet.contains('\'') {
@@ -195,9 +199,8 @@ impl RangeRef {
         let max_row = range.end.row;
         let min_col = range.start.col;
         let max_col = range.end.col;
-        (min_row..=max_row).flat_map(move |r| {
-            (min_col..=max_col).map(move |c| CellCoord::must_new(r, c))
-        })
+        (min_row..=max_row)
+            .flat_map(move |r| (min_col..=max_col).map(move |c| CellCoord::must_new(r, c)))
     }
 }
 
@@ -231,10 +234,7 @@ pub enum Expression {
     /// Cell range reference (e.g. A1:B10, Sheet1!A1:B10)
     Range(RangeRef),
     /// Function call: `SUM(A1:B10, 10)`
-    FunctionCall {
-        name: String,
-        args: Vec<Expression>,
-    },
+    FunctionCall { name: String, args: Vec<Expression> },
     /// Binary operation: `left + right`, `left = right`
     BinaryOp {
         op: BinaryOp,
@@ -242,10 +242,7 @@ pub enum Expression {
         right: Box<Expression>,
     },
     /// Unary operation: `-A1`, `+5`
-    UnaryOp {
-        op: UnaryOp,
-        expr: Box<Expression>,
-    },
+    UnaryOp { op: UnaryOp, expr: Box<Expression> },
 }
 
 impl Expression {

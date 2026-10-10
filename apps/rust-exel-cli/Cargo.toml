@@ -9,6 +9,7 @@ license.workspace = true
 exel-core.workspace = true
 exel-cell.workspace = true
 exel-workbook.workspace = true
+exel-calc.workspace = true
 exel-formatting.workspace = true
 csv.workspace = true
 calamine.workspace = true

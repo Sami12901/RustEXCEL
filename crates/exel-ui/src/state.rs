@@ -98,6 +98,10 @@ pub enum SpreadsheetAction {
         row: u32,
         height: f32,
     },
+    InsertRow(u32),
+    InsertColumn(u32),
+    DeleteRow(u32),
+    DeleteColumn(u32),
     Undo,
     Redo,
     Cut,
@@ -110,6 +114,7 @@ pub enum SpreadsheetAction {
     SaveAsFile,
     ExportCsv,
     ExportXlsx,
+    StatusMessage(String),
 }
 
 /// Central state tracking for the UI session.

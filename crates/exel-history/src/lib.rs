@@ -159,7 +159,10 @@ impl<T: 'static> HistoryManager<T> {
             ));
         }
 
-        let mut cmd = self.undo_stack.pop_back().ok_or(HistoryError::NothingToUndo)?;
+        let mut cmd = self
+            .undo_stack
+            .pop_back()
+            .ok_or(HistoryError::NothingToUndo)?;
         if let Err(e) = cmd.undo(target) {
             // Re-insert command so stack remains valid
             self.undo_stack.push_back(cmd);
@@ -235,7 +238,10 @@ impl<T: 'static> HistoryManager<T> {
     }
 
     /// Start a transactional grouping of multiple commands.
-    pub fn begin_transaction<S: Into<String>>(&mut self, description: S) -> Result<(), HistoryError> {
+    pub fn begin_transaction<S: Into<String>>(
+        &mut self,
+        description: S,
+    ) -> Result<(), HistoryError> {
         if self.active_transaction.is_some() {
             return Err(HistoryError::TransactionError(
                 "Transaction already in progress".to_string(),
@@ -319,7 +325,9 @@ mod tests {
         assert!(!history.can_undo());
         assert!(!history.can_redo());
 
-        history.execute(Box::new(AddCommand { delta: 10 }), &mut state).unwrap();
+        history
+            .execute(Box::new(AddCommand { delta: 10 }), &mut state)
+            .unwrap();
         assert_eq!(state.val, 10);
         assert!(history.can_undo());
         assert!(!history.can_redo());
@@ -328,7 +336,9 @@ mod tests {
         history.mark_clean();
         assert!(!history.is_dirty());
 
-        history.execute(Box::new(AddCommand { delta: 5 }), &mut state).unwrap();
+        history
+            .execute(Box::new(AddCommand { delta: 5 }), &mut state)
+            .unwrap();
         assert_eq!(state.val, 15);
         assert!(history.is_dirty());
 
@@ -351,7 +361,9 @@ mod tests {
         let mut history = HistoryManager::new(3);
 
         for i in 1..=5 {
-            history.execute(Box::new(AddCommand { delta: i }), &mut state).unwrap();
+            history
+                .execute(Box::new(AddCommand { delta: i }), &mut state)
+                .unwrap();
         }
 
         assert_eq!(history.undo_count(), 3);
@@ -370,8 +382,12 @@ mod tests {
         let mut history = HistoryManager::new(10);
 
         history.begin_transaction("Batch changes").unwrap();
-        history.execute(Box::new(AddCommand { delta: 10 }), &mut state).unwrap();
-        history.execute(Box::new(AddCommand { delta: 20 }), &mut state).unwrap();
+        history
+            .execute(Box::new(AddCommand { delta: 10 }), &mut state)
+            .unwrap();
+        history
+            .execute(Box::new(AddCommand { delta: 20 }), &mut state)
+            .unwrap();
         assert_eq!(state.val, 130);
         history.commit_transaction().unwrap();
 
@@ -381,7 +397,9 @@ mod tests {
 
         // Rollback test
         history.begin_transaction("Failing batch").unwrap();
-        history.execute(Box::new(AddCommand { delta: 50 }), &mut state).unwrap();
+        history
+            .execute(Box::new(AddCommand { delta: 50 }), &mut state)
+            .unwrap();
         assert_eq!(state.val, 150);
         history.rollback_transaction(&mut state).unwrap();
         assert_eq!(state.val, 100);

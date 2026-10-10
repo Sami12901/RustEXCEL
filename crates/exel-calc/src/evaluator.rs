@@ -166,4 +166,3 @@ pub fn coerce_to_number(val: &CellValue) -> Result<f64, CellError> {
         _ => Err(CellError::Value),
     }
 }
-

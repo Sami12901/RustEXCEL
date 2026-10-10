@@ -4,7 +4,11 @@ use exel_formula::Expression;
 
 pub type EvalFn<'a> = &'a dyn Fn(&CalcContext, &Expression) -> Result<CellValue, CellError>;
 
-pub fn fn_sum(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_sum(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     let mut sum = 0.0;
     for arg in args {
         match arg {
@@ -91,7 +95,11 @@ pub fn fn_product(
     }
 }
 
-pub fn fn_abs(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_abs(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.len() != 1 {
         return Err(CellError::Value);
     }
@@ -119,7 +127,11 @@ pub fn fn_round(
     Ok(CellValue::Number(rounded))
 }
 
-pub fn fn_int(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_int(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.len() != 1 {
         return Err(CellError::Value);
     }
@@ -128,7 +140,11 @@ pub fn fn_int(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<Ce
     Ok(CellValue::Number(n.floor()))
 }
 
-pub fn fn_mod(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_mod(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.len() != 2 {
         return Err(CellError::Value);
     }
@@ -174,7 +190,11 @@ pub fn fn_power(
     Ok(CellValue::Number(result))
 }
 
-pub fn fn_sqrt(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_sqrt(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.len() != 1 {
         return Err(CellError::Value);
     }
@@ -186,7 +206,11 @@ pub fn fn_sqrt(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<C
     Ok(CellValue::Number(n.sqrt()))
 }
 
-pub fn fn_pi(_ctx: &CalcContext, args: &[Expression], _eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_pi(
+    _ctx: &CalcContext,
+    args: &[Expression],
+    _eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if !args.is_empty() {
         return Err(CellError::Value);
     }

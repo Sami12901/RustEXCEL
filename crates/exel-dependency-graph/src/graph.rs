@@ -230,6 +230,7 @@ impl DependencyGraph {
         let mut stack: Vec<CellNode> = Vec::new();
         let mut sccs: Vec<Vec<CellNode>> = Vec::new();
 
+        #[allow(clippy::too_many_arguments)]
         fn strong_connect(
             v: &CellNode,
             index: &mut usize,
@@ -662,7 +663,9 @@ mod tests {
         assert!(!graph.is_dirty(&x1));
         assert!(!graph.is_dirty(&y1));
 
-        let recalc = graph.ordered_recalc_subgraph(&[a1.clone()]).unwrap();
+        let recalc = graph
+            .ordered_recalc_subgraph(std::slice::from_ref(&a1))
+            .unwrap();
         assert_eq!(recalc, vec![a1, b1, c1]);
     }
 

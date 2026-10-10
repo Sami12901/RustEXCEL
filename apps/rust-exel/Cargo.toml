@@ -5,6 +5,16 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[lib]
+name = "rust_exel"
+path = "src/lib.rs"
+test = false
+
+[[bin]]
+name = "rust-exel"
+path = "src/main.rs"
+test = false
+
 [dependencies]
 exel-core.workspace = true
 exel-cell.workspace = true
@@ -12,6 +22,11 @@ exel-workbook.workspace = true
 exel-formatting.workspace = true
 exel-shortcuts.workspace = true
 exel-ui.workspace = true
+exel-io.workspace = true
+exel-csv.workspace = true
+exel-xlsx.workspace = true
+exel-calc.workspace = true
+exel-clipboard.workspace = true
 eframe.workspace = true
 egui.workspace = true
 rfd.workspace = true
@@ -22,3 +37,6 @@ csv.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 image = { version = "0.25", default-features = false, features = ["png"] }
+
+[dev-dependencies]
+tempfile.workspace = true

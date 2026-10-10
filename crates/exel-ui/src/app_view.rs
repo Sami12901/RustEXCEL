@@ -59,12 +59,10 @@ impl<'a> SpreadsheetAppView<'a> {
         }
 
         // 3. Ribbon Panel (Top)
-        Panel::top("ribbon_panel")
-            .resizable(false)
-            .show(ui, |ui| {
-                let ribbon_actions = Ribbon::new(self.state).show(ui);
-                actions.extend(ribbon_actions);
-            });
+        Panel::top("ribbon_panel").resizable(false).show(ui, |ui| {
+            let ribbon_actions = Ribbon::new(self.state).show(ui);
+            actions.extend(ribbon_actions);
+        });
 
         // 4. Formula Bar Panel (Below Ribbon)
         if self.state.show_formula_bar {

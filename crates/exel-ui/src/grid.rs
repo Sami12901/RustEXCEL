@@ -1,8 +1,8 @@
 use crate::state::{AutoSumFunction, SpreadsheetAction, SpreadsheetUiState};
 use crate::theme::SpreadsheetTheme;
 use egui::{
-    vec2, Align2, Color32, CornerRadius, CursorIcon, Event, Id, Key, Painter, Pos2, Rect,
-    Response, Sense, Stroke, StrokeKind, Ui, UiBuilder,
+    vec2, Align2, Color32, CornerRadius, CursorIcon, Event, Id, Key, Painter, Pos2, Rect, Response,
+    Sense, Stroke, StrokeKind, Ui, UiBuilder,
 };
 use exel_cell::{CellCoord, CellRange, CellValue};
 use exel_core::{col_to_name, MAX_COLS, MAX_ROWS};
@@ -53,18 +53,12 @@ impl<'a> SpreadsheetGrid<'a> {
         }
 
         // 3. Compute virtualized visible columns
-        let (visible_cols, col_positions) = self.compute_visible_columns(
-            grid_content_rect.width(),
-            self.state.scroll_x,
-            zoom,
-        );
+        let (visible_cols, col_positions) =
+            self.compute_visible_columns(grid_content_rect.width(), self.state.scroll_x, zoom);
 
         // 4. Compute virtualized visible rows
-        let (visible_rows, row_positions) = self.compute_visible_rows(
-            grid_content_rect.height(),
-            self.state.scroll_y,
-            zoom,
-        );
+        let (visible_rows, row_positions) =
+            self.compute_visible_rows(grid_content_rect.height(), self.state.scroll_y, zoom);
 
         // 5. Handle mouse interactions (clicks, drags, header resizing)
         self.handle_mouse_interactions(
@@ -255,6 +249,7 @@ impl<'a> SpreadsheetGrid<'a> {
         (visible_rows, positions)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn draw_cells(
         &self,
         painter: &Painter,
@@ -361,6 +356,7 @@ impl<'a> SpreadsheetGrid<'a> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn draw_selection_and_active_cell(
         &self,
         painter: &Painter,
@@ -373,7 +369,9 @@ impl<'a> SpreadsheetGrid<'a> {
     ) {
         let sel = self.state.selection;
 
-        if let Some(sel_rect) = self.get_range_screen_rect(grid_rect, cols, col_pos, rows, row_pos, sel) {
+        if let Some(sel_rect) =
+            self.get_range_screen_rect(grid_rect, cols, col_pos, rows, row_pos, sel)
+        {
             if sel.cell_count() > 1 {
                 painter.rect_filled(sel_rect, 0.0, SpreadsheetTheme::SELECTION_FILL);
                 painter.rect_stroke(
@@ -403,10 +401,7 @@ impl<'a> SpreadsheetGrid<'a> {
             }
 
             let handle_size = SpreadsheetTheme::FILL_HANDLE_SIZE * zoom.clamp(0.8, 1.5);
-            let handle_rect = Rect::from_center_size(
-                sel_rect.max,
-                vec2(handle_size, handle_size),
-            );
+            let handle_rect = Rect::from_center_size(sel_rect.max, vec2(handle_size, handle_size));
             painter.rect_filled(
                 handle_rect,
                 CornerRadius::same(1),
@@ -421,6 +416,7 @@ impl<'a> SpreadsheetGrid<'a> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn draw_autofill_preview(
         &self,
         painter: &Painter,
@@ -432,7 +428,9 @@ impl<'a> SpreadsheetGrid<'a> {
         target: CellRange,
         _zoom: f32,
     ) {
-        if let Some(target_rect) = self.get_range_screen_rect(grid_rect, cols, col_pos, rows, row_pos, target) {
+        if let Some(target_rect) =
+            self.get_range_screen_rect(grid_rect, cols, col_pos, rows, row_pos, target)
+        {
             painter.rect_filled(target_rect, 0.0, SpreadsheetTheme::AUTOFILL_FILL);
             painter.rect_stroke(
                 target_rect,
@@ -484,7 +482,10 @@ impl<'a> SpreadsheetGrid<'a> {
             }
 
             painter.line_segment(
-                [Pos2::new(right, header_rect.min.y), Pos2::new(right, header_rect.max.y)],
+                [
+                    Pos2::new(right, header_rect.min.y),
+                    Pos2::new(right, header_rect.max.y),
+                ],
                 border_stroke,
             );
 
@@ -546,7 +547,10 @@ impl<'a> SpreadsheetGrid<'a> {
             }
 
             painter.line_segment(
-                [Pos2::new(header_rect.min.x, bottom), Pos2::new(header_rect.max.x, bottom)],
+                [
+                    Pos2::new(header_rect.min.x, bottom),
+                    Pos2::new(header_rect.max.x, bottom),
+                ],
                 border_stroke,
             );
 
@@ -586,6 +590,7 @@ impl<'a> SpreadsheetGrid<'a> {
         ));
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn handle_mouse_interactions(
         &mut self,
         ui: &mut Ui,
@@ -683,7 +688,10 @@ impl<'a> SpreadsheetGrid<'a> {
 
         let corner_rect = Rect::from_min_max(
             total_rect.min,
-            Pos2::new(total_rect.min.x + row_header_w, total_rect.min.y + col_header_h),
+            Pos2::new(
+                total_rect.min.x + row_header_w,
+                total_rect.min.y + col_header_h,
+            ),
         );
         if let Some(pos) = hover_pos {
             if corner_rect.contains(pos) && response.clicked() {
@@ -704,7 +712,8 @@ impl<'a> SpreadsheetGrid<'a> {
             self.state.selection,
         ) {
             let handle_size = SpreadsheetTheme::FILL_HANDLE_SIZE * zoom.clamp(0.8, 1.5) + 4.0;
-            let handle_hit_rect = Rect::from_center_size(sel_rect.max, vec2(handle_size, handle_size));
+            let handle_hit_rect =
+                Rect::from_center_size(sel_rect.max, vec2(handle_size, handle_size));
 
             if let Some(pos) = hover_pos {
                 if handle_hit_rect.contains(pos) {
@@ -719,7 +728,9 @@ impl<'a> SpreadsheetGrid<'a> {
             if self.state.is_dragging_fill_handle {
                 ui.output_mut(|o| o.cursor_icon = CursorIcon::Crosshair);
                 if let Some(pos) = hover_pos {
-                    if let Some(hovered_coord) = self.pos_to_cell_coord(grid_rect, cols, col_pos, rows, row_pos, pos) {
+                    if let Some(hovered_coord) =
+                        self.pos_to_cell_coord(grid_rect, cols, col_pos, rows, row_pos, pos)
+                    {
                         let orig = self.state.selection;
                         let target = CellRange::new(orig.start, hovered_coord);
                         self.state.fill_handle_target_range = Some(target);
@@ -744,10 +755,18 @@ impl<'a> SpreadsheetGrid<'a> {
 
         if let Some(pos) = hover_pos {
             if grid_rect.contains(pos) {
-                if let Some(coord) = self.pos_to_cell_coord(grid_rect, cols, col_pos, rows, row_pos, pos) {
+                if let Some(coord) =
+                    self.pos_to_cell_coord(grid_rect, cols, col_pos, rows, row_pos, pos)
+                {
                     if response.double_clicked() {
-                        let text = self.worksheet.get_cell(coord)
-                            .and_then(|c| c.formula.clone().or_else(|| Some(c.value.to_display_string())))
+                        let text = self
+                            .worksheet
+                            .get_cell(coord)
+                            .and_then(|c| {
+                                c.formula
+                                    .clone()
+                                    .or_else(|| Some(c.value.to_display_string()))
+                            })
                             .unwrap_or_default();
                         self.state.start_editing(text);
                         return;
@@ -758,8 +777,14 @@ impl<'a> SpreadsheetGrid<'a> {
                         if shift {
                             self.state.extend_selection(coord);
                         } else {
-                            let formula_text = self.worksheet.get_cell(coord)
-                                .and_then(|c| c.formula.clone().or_else(|| Some(c.value.to_display_string())))
+                            let formula_text = self
+                                .worksheet
+                                .get_cell(coord)
+                                .and_then(|c| {
+                                    c.formula
+                                        .clone()
+                                        .or_else(|| Some(c.value.to_display_string()))
+                                })
                                 .unwrap_or_default();
                             self.state.select_cell(coord, formula_text);
                         }
@@ -785,8 +810,14 @@ impl<'a> SpreadsheetGrid<'a> {
 
         if input.key_pressed(Key::F2) {
             let coord = self.state.active_cell;
-            let text = self.worksheet.get_cell(coord)
-                .and_then(|c| c.formula.clone().or_else(|| Some(c.value.to_display_string())))
+            let text = self
+                .worksheet
+                .get_cell(coord)
+                .and_then(|c| {
+                    c.formula
+                        .clone()
+                        .or_else(|| Some(c.value.to_display_string()))
+                })
                 .unwrap_or_default();
             self.state.start_editing(text);
             return;
@@ -820,15 +851,23 @@ impl<'a> SpreadsheetGrid<'a> {
 
         if delta_r != 0 || delta_c != 0 {
             let step = if ctrl { 10 } else { 1 };
-            let new_row = ((self.state.active_cell.row as i32) + delta_r * step).clamp(1, MAX_ROWS as i32) as u32;
-            let new_col = ((self.state.active_cell.col as i32) + delta_c * step).clamp(1, MAX_COLS as i32) as u32;
+            let new_row = ((self.state.active_cell.row as i32) + delta_r * step)
+                .clamp(1, MAX_ROWS as i32) as u32;
+            let new_col = ((self.state.active_cell.col as i32) + delta_c * step)
+                .clamp(1, MAX_COLS as i32) as u32;
             let target = CellCoord::must_new(new_row, new_col);
 
             if shift {
                 self.state.extend_selection(target);
             } else {
-                let text = self.worksheet.get_cell(target)
-                    .and_then(|c| c.formula.clone().or_else(|| Some(c.value.to_display_string())))
+                let text = self
+                    .worksheet
+                    .get_cell(target)
+                    .and_then(|c| {
+                        c.formula
+                            .clone()
+                            .or_else(|| Some(c.value.to_display_string()))
+                    })
                     .unwrap_or_default();
                 self.state.select_cell(target, text);
             }
@@ -838,8 +877,14 @@ impl<'a> SpreadsheetGrid<'a> {
         if input.key_pressed(Key::Enter) {
             let next_row = (self.state.active_cell.row + 1).min(MAX_ROWS);
             let next_coord = CellCoord::must_new(next_row, self.state.active_cell.col);
-            let text = self.worksheet.get_cell(next_coord)
-                .and_then(|c| c.formula.clone().or_else(|| Some(c.value.to_display_string())))
+            let text = self
+                .worksheet
+                .get_cell(next_coord)
+                .and_then(|c| {
+                    c.formula
+                        .clone()
+                        .or_else(|| Some(c.value.to_display_string()))
+                })
                 .unwrap_or_default();
             self.state.select_cell(next_coord, text);
             return;
@@ -848,8 +893,14 @@ impl<'a> SpreadsheetGrid<'a> {
         if input.key_pressed(Key::Tab) {
             let next_col = (self.state.active_cell.col + 1).min(MAX_COLS);
             let next_coord = CellCoord::must_new(self.state.active_cell.row, next_col);
-            let text = self.worksheet.get_cell(next_coord)
-                .and_then(|c| c.formula.clone().or_else(|| Some(c.value.to_display_string())))
+            let text = self
+                .worksheet
+                .get_cell(next_coord)
+                .and_then(|c| {
+                    c.formula
+                        .clone()
+                        .or_else(|| Some(c.value.to_display_string()))
+                })
                 .unwrap_or_default();
             self.state.select_cell(next_coord, text);
             return;
@@ -857,7 +908,11 @@ impl<'a> SpreadsheetGrid<'a> {
 
         for event in &input.events {
             if let Event::Text(t) = event {
-                if !t.is_empty() && !input.modifiers.ctrl && !input.modifiers.mac_cmd && !input.modifiers.alt {
+                if !t.is_empty()
+                    && !input.modifiers.ctrl
+                    && !input.modifiers.mac_cmd
+                    && !input.modifiers.alt
+                {
                     self.state.start_editing(t.clone());
                     return;
                 }
@@ -865,6 +920,7 @@ impl<'a> SpreadsheetGrid<'a> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn render_inline_editor(
         &mut self,
         ui: &mut Ui,
@@ -877,14 +933,16 @@ impl<'a> SpreadsheetGrid<'a> {
         actions: &mut Vec<SpreadsheetAction>,
     ) {
         let coord = self.state.active_cell;
-        if let Some(cell_rect) = self.get_cell_screen_rect(grid_rect, cols, col_pos, rows, row_pos, coord.col, coord.row) {
+        if let Some(cell_rect) = self.get_cell_screen_rect(
+            grid_rect, cols, col_pos, rows, row_pos, coord.col, coord.row,
+        ) {
             let mut edit_rect = cell_rect;
             edit_rect.max.x = edit_rect.max.x.max(edit_rect.min.x + 120.0);
 
             let mut child_ui = ui.new_child(UiBuilder::new().max_rect(edit_rect));
             let editor_response = child_ui.add(
                 egui::TextEdit::singleline(&mut self.state.edit_buffer)
-                    .id(Id::new("grid_inline_cell_editor"))
+                    .id(Id::new("grid_inline_cell_editor")),
             );
 
             if self.state.edit_focus_requested {
@@ -900,8 +958,14 @@ impl<'a> SpreadsheetGrid<'a> {
 
                 let next_row = (coord.row + 1).min(MAX_ROWS);
                 let next_coord = CellCoord::must_new(next_row, coord.col);
-                let next_text = self.worksheet.get_cell(next_coord)
-                    .and_then(|c| c.formula.clone().or_else(|| Some(c.value.to_display_string())))
+                let next_text = self
+                    .worksheet
+                    .get_cell(next_coord)
+                    .and_then(|c| {
+                        c.formula
+                            .clone()
+                            .or_else(|| Some(c.value.to_display_string()))
+                    })
                     .unwrap_or_default();
                 self.state.select_cell(next_coord, next_text);
             } else if child_ui.input(|i| i.key_pressed(Key::Escape)) {
@@ -912,15 +976,26 @@ impl<'a> SpreadsheetGrid<'a> {
 
                 let next_col = (coord.col + 1).min(MAX_COLS);
                 let next_coord = CellCoord::must_new(coord.row, next_col);
-                let next_text = self.worksheet.get_cell(next_coord)
-                    .and_then(|c| c.formula.clone().or_else(|| Some(c.value.to_display_string())))
+                let next_text = self
+                    .worksheet
+                    .get_cell(next_coord)
+                    .and_then(|c| {
+                        c.formula
+                            .clone()
+                            .or_else(|| Some(c.value.to_display_string()))
+                    })
                     .unwrap_or_default();
                 self.state.select_cell(next_coord, next_text);
             }
         }
     }
 
-    fn apply_cell_edit(&self, coord: CellCoord, text: String, actions: &mut Vec<SpreadsheetAction>) {
+    fn apply_cell_edit(
+        &self,
+        coord: CellCoord,
+        text: String,
+        actions: &mut Vec<SpreadsheetAction>,
+    ) {
         let trimmed = text.trim();
         if trimmed.starts_with('=') {
             actions.push(SpreadsheetAction::SetCellFormula {
@@ -1004,25 +1079,32 @@ impl<'a> SpreadsheetGrid<'a> {
         let rel_x = pos.x - grid_rect.min.x;
         let rel_y = pos.y - grid_rect.min.y;
 
-        let col = cols.iter().zip(col_pos.iter()).find_map(|(&c, &(x1, x2))| {
-            if rel_x >= x1 && rel_x <= x2 {
-                Some(c)
-            } else {
-                None
-            }
-        })?;
+        let col = cols
+            .iter()
+            .zip(col_pos.iter())
+            .find_map(|(&c, &(x1, x2))| {
+                if rel_x >= x1 && rel_x <= x2 {
+                    Some(c)
+                } else {
+                    None
+                }
+            })?;
 
-        let row = rows.iter().zip(row_pos.iter()).find_map(|(&r, &(y1, y2))| {
-            if rel_y >= y1 && rel_y <= y2 {
-                Some(r)
-            } else {
-                None
-            }
-        })?;
+        let row = rows
+            .iter()
+            .zip(row_pos.iter())
+            .find_map(|(&r, &(y1, y2))| {
+                if rel_y >= y1 && rel_y <= y2 {
+                    Some(r)
+                } else {
+                    None
+                }
+            })?;
 
         CellCoord::new(row, col).ok()
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn get_cell_screen_rect(
         &self,
         grid_rect: Rect,
@@ -1077,7 +1159,10 @@ impl<'a> SpreadsheetGrid<'a> {
         }
 
         if has_intersection && min_x <= max_x && min_y <= max_y {
-            Some(Rect::from_min_max(Pos2::new(min_x, min_y), Pos2::new(max_x, max_y)))
+            Some(Rect::from_min_max(
+                Pos2::new(min_x, min_y),
+                Pos2::new(max_x, max_y),
+            ))
         } else {
             None
         }

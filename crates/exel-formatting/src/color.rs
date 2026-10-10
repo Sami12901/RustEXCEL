@@ -93,7 +93,10 @@ mod tests {
         assert_eq!(Color::from_hex("#FF00AA").unwrap(), Color::rgb(255, 0, 170));
         assert_eq!(Color::from_hex("00FF00").unwrap(), Color::rgb(0, 255, 0));
         assert_eq!(Color::from_hex("#F0A").unwrap(), Color::rgb(255, 0, 170));
-        assert_eq!(Color::from_hex("#00000080").unwrap(), Color::rgba(0, 0, 0, 128));
+        assert_eq!(
+            Color::from_hex("#00000080").unwrap(),
+            Color::rgba(0, 0, 0, 128)
+        );
         assert_eq!(Color::rgb(255, 128, 0).to_hex(), "#FF8000");
     }
 }

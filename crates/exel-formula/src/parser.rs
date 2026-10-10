@@ -14,6 +14,7 @@ impl Parser {
         Self { tokens, cursor: 0 }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(input: &str) -> Result<Self, FormulaError> {
         let mut lexer = Lexer::new(input);
         let tokens = lexer.tokenize()?;
@@ -21,7 +22,10 @@ impl Parser {
     }
 
     fn peek(&self) -> &TokenKind {
-        &self.tokens.get(self.cursor).map(|t| &t.kind).unwrap_or(&TokenKind::Eof)
+        self.tokens
+            .get(self.cursor)
+            .map(|t| &t.kind)
+            .unwrap_or(&TokenKind::Eof)
     }
 
     fn current_token(&self) -> &Token {
@@ -264,7 +268,9 @@ impl Parser {
                     if !matches!(self.peek(), TokenKind::RParen) {
                         loop {
                             // Support empty argument, e.g. IF(A1>0, , 10)
-                            if matches!(self.peek(), TokenKind::Comma) || matches!(self.peek(), TokenKind::RParen) {
+                            if matches!(self.peek(), TokenKind::Comma)
+                                || matches!(self.peek(), TokenKind::RParen)
+                            {
                                 args.push(Expression::Literal(Literal::Number(0.0)));
                             } else {
                                 let arg = self.parse_comparison()?;
@@ -305,6 +311,16 @@ impl Parser {
     }
 }
 
+impl std::str::FromStr for Parser {
+    type Err = FormulaError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let mut lexer = Lexer::new(input);
+        let tokens = lexer.tokenize()?;
+        Ok(Self::new(tokens))
+    }
+}
+
 /// Helper function to parse a formula string into an AST `Expression`.
 pub fn parse_formula(input: &str) -> Result<Expression, FormulaError> {
     let mut parser = Parser::from_str(input)?;
@@ -322,7 +338,12 @@ mod tests {
         if let Expression::BinaryOp { op, left, right } = expr {
             assert_eq!(op, BinaryOp::Add);
             assert_eq!(*left, Expression::Literal(Literal::Number(1.0)));
-            if let Expression::BinaryOp { op: mul_op, left: m_l, right: m_r } = *right {
+            if let Expression::BinaryOp {
+                op: mul_op,
+                left: m_l,
+                right: m_r,
+            } = *right
+            {
                 assert_eq!(mul_op, BinaryOp::Mul);
                 assert_eq!(*m_l, Expression::Literal(Literal::Number(2.0)));
                 assert_eq!(*m_r, Expression::Literal(Literal::Number(3.0)));
@@ -340,7 +361,13 @@ mod tests {
         if let Expression::BinaryOp { op, left, right } = expr {
             assert_eq!(op, BinaryOp::Power);
             assert_eq!(*right, Expression::Literal(Literal::Number(2.0)));
-            assert!(matches!(*left, Expression::BinaryOp { op: BinaryOp::Add, .. }));
+            assert!(matches!(
+                *left,
+                Expression::BinaryOp {
+                    op: BinaryOp::Add,
+                    ..
+                }
+            ));
         } else {
             panic!("Expected Power");
         }
@@ -387,9 +414,24 @@ mod tests {
         if let Expression::FunctionCall { name, args } = expr {
             assert_eq!(name, "IF");
             assert_eq!(args.len(), 3);
-            assert!(matches!(&args[0], Expression::BinaryOp { op: BinaryOp::Gt, .. }));
-            assert!(matches!(&args[1], Expression::BinaryOp { op: BinaryOp::Concat, .. }));
-            assert_eq!(args[2], Expression::Literal(Literal::String("Low".to_string())));
+            assert!(matches!(
+                &args[0],
+                Expression::BinaryOp {
+                    op: BinaryOp::Gt,
+                    ..
+                }
+            ));
+            assert!(matches!(
+                &args[1],
+                Expression::BinaryOp {
+                    op: BinaryOp::Concat,
+                    ..
+                }
+            ));
+            assert_eq!(
+                args[2],
+                Expression::Literal(Literal::String("Low".to_string()))
+            );
         } else {
             panic!("Expected IF function call");
         }
@@ -406,6 +448,9 @@ mod tests {
         assert!(coords.contains(&(None, exel_core::CellCoord::must_new(1, 2))));
         assert!(coords.contains(&(None, exel_core::CellCoord::must_new(2, 2))));
         assert!(coords.contains(&(None, exel_core::CellCoord::must_new(1, 3))));
-        assert!(coords.contains(&(Some("Sheet2".to_string()), exel_core::CellCoord::must_new(4, 4))));
+        assert!(coords.contains(&(
+            Some("Sheet2".to_string()),
+            exel_core::CellCoord::must_new(4, 4)
+        )));
     }
 }

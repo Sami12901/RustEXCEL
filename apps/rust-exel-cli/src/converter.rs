@@ -8,8 +8,8 @@ use std::path::Path;
 
 /// Reads a CSV file into a single-sheet Workbook.
 pub fn read_csv(path: &Path) -> Result<Workbook> {
-    let file = File::open(path)
-        .with_context(|| format!("Failed to open CSV file: {}", path.display()))?;
+    let file =
+        File::open(path).with_context(|| format!("Failed to open CSV file: {}", path.display()))?;
     let mut reader = csv::Reader::from_reader(file);
 
     let sheet_name = path
@@ -149,7 +149,8 @@ pub fn write_xlsx(wb: &Workbook, path: &Path) -> Result<()> {
         }
     }
 
-    excel_wb.save(path)
+    excel_wb
+        .save(path)
         .with_context(|| format!("Failed to save XLSX workbook: {}", path.display()))?;
 
     Ok(())

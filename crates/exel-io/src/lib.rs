@@ -105,9 +105,7 @@ where
     F: FnOnce(&mut File) -> Result<(), IoError>,
 {
     let target = target_path.as_ref();
-    let parent = target
-        .parent()
-        .unwrap_or_else(|| Path::new("."));
+    let parent = target.parent().unwrap_or_else(|| Path::new("."));
 
     std::fs::create_dir_all(parent)?;
 
@@ -125,7 +123,10 @@ where
 
     // Atomically persist over target
     temp.persist(target).map_err(|e| {
-        IoError::SaveFailed(format!("Failed to atomically persist file to {}: {e}", target.display()))
+        IoError::SaveFailed(format!(
+            "Failed to atomically persist file to {}: {e}",
+            target.display()
+        ))
     })?;
 
     Ok(())
@@ -152,8 +153,14 @@ mod tests {
         assert_eq!(detect_format("records.json"), FileFormat::Json);
         assert_eq!(detect_format("unknown.xyz"), FileFormat::Unknown);
 
-        assert_eq!(detect_format_from_bytes(b"PK\x03\x04\x14\x00"), FileFormat::Xlsx);
-        assert_eq!(detect_format_from_bytes(b"   {\"rows\": []}"), FileFormat::Json);
+        assert_eq!(
+            detect_format_from_bytes(b"PK\x03\x04\x14\x00"),
+            FileFormat::Xlsx
+        );
+        assert_eq!(
+            detect_format_from_bytes(b"   {\"rows\": []}"),
+            FileFormat::Json
+        );
         assert_eq!(detect_format_from_bytes(b"   [1, 2, 3]"), FileFormat::Json);
     }
 
@@ -164,11 +171,17 @@ mod tests {
 
         // First save
         save_atomic_bytes(&file_path, b"Initial Content").unwrap();
-        assert_eq!(std::fs::read_to_string(&file_path).unwrap(), "Initial Content");
+        assert_eq!(
+            std::fs::read_to_string(&file_path).unwrap(),
+            "Initial Content"
+        );
 
         // Overwrite save
         save_atomic_bytes(&file_path, b"Updated Content").unwrap();
-        assert_eq!(std::fs::read_to_string(&file_path).unwrap(), "Updated Content");
+        assert_eq!(
+            std::fs::read_to_string(&file_path).unwrap(),
+            "Updated Content"
+        );
     }
 
     #[test]

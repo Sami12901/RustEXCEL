@@ -3,8 +3,8 @@ use chrono::{Datelike, NaiveDate, NaiveDateTime, Timelike};
 use exel_cell::{CellCoord, CellError, CellState, CellValue, SheetId};
 use exel_core::CoreError;
 use exel_formatting::{
-    excel_serial_to_datetime, BorderStyle, CellStyle, FillPattern,
-    HorizontalAlignment, StyleTable, VerticalAlignment,
+    excel_serial_to_datetime, BorderStyle, CellStyle, FillPattern, HorizontalAlignment, StyleTable,
+    VerticalAlignment,
 };
 use exel_io::{save_atomic, IoError, SpreadsheetReader, SpreadsheetWriter};
 use exel_workbook::{Workbook, Worksheet};
@@ -129,7 +129,10 @@ pub fn read_xlsx_reader<R: Read + Seek>(reader: R) -> Result<Workbook, XlsxError
             let mut map = std::collections::HashMap::new();
             for (r, c, f) in formula_range.used_cells() {
                 if !f.is_empty() {
-                    map.insert((start_r + r as u32 + 1, start_c + c as u32 + 1), f.to_string());
+                    map.insert(
+                        (start_r + r as u32 + 1, start_c + c as u32 + 1),
+                        f.to_string(),
+                    );
                 }
             }
             Some(map)
@@ -160,7 +163,9 @@ pub fn read_xlsx_reader<R: Read + Seek>(reader: R) -> Result<Workbook, XlsxError
                             }
                         }
                         Data::DateTimeIso(iso_str) => {
-                            if let Ok(ndt) = NaiveDateTime::parse_from_str(iso_str, "%Y-%m-%d %H:%M:%S") {
+                            if let Ok(ndt) =
+                                NaiveDateTime::parse_from_str(iso_str, "%Y-%m-%d %H:%M:%S")
+                            {
                                 CellValue::DateTime(ndt)
                             } else if let Ok(nd) = NaiveDate::parse_from_str(iso_str, "%Y-%m-%d") {
                                 CellValue::DateTime(nd.and_hms_opt(0, 0, 0).unwrap())
@@ -337,7 +342,11 @@ fn to_excel_datetime(dt: &NaiveDateTime) -> Option<ExcelDateTime> {
     let time = dt.time();
     ExcelDateTime::from_ymd(date.year() as u16, date.month() as u8, date.day() as u8)
         .ok()?
-        .and_hms(time.hour() as u16, time.minute() as u8, time.second() as f64)
+        .and_hms(
+            time.hour() as u16,
+            time.minute() as u8,
+            time.second() as f64,
+        )
         .ok()
 }
 
@@ -410,7 +419,7 @@ pub fn write_xlsx_bytes(wb: &Workbook, styles: Option<&StyleTable>) -> Result<Ve
                         if let Some(edt) = to_excel_datetime(dt) {
                             let _ = ws.write_datetime_with_format(r, c, edt, &fmt);
                         } else {
-                            let _ = ws.write_string_with_format(r, c, &dt.to_string(), &fmt);
+                            let _ = ws.write_string_with_format(r, c, dt.to_string(), &fmt);
                         }
                     }
                     CellValue::Error(err) => {
@@ -444,14 +453,9 @@ pub fn write_xlsx_file<P: AsRef<Path>>(
 // SpreadsheetReader & SpreadsheetWriter implementations
 // ============================================================================
 
+#[derive(Default)]
 pub struct XlsxHandler<'a> {
     pub styles: Option<&'a StyleTable>,
-}
-
-impl<'a> Default for XlsxHandler<'a> {
-    fn default() -> Self {
-        Self { styles: None }
-    }
 }
 
 impl<'a> XlsxHandler<'a> {
@@ -497,12 +501,30 @@ mod tests {
         let sheet_id = wb.add_sheet("Sales").unwrap();
         let sheet = wb.get_sheet_mut(&sheet_id).unwrap();
 
-        sheet.set_cell_value(CellCoord::from_a1("A1").unwrap(), CellValue::Text("Quarter".into()));
-        sheet.set_cell_value(CellCoord::from_a1("B1").unwrap(), CellValue::Text("Revenue".into()));
-        sheet.set_cell_value(CellCoord::from_a1("A2").unwrap(), CellValue::Text("Q1".into()));
-        sheet.set_cell_value(CellCoord::from_a1("B2").unwrap(), CellValue::Number(25000.0));
-        sheet.set_cell_value(CellCoord::from_a1("A3").unwrap(), CellValue::Text("Q2".into()));
-        sheet.set_cell_value(CellCoord::from_a1("B3").unwrap(), CellValue::Number(31000.5));
+        sheet.set_cell_value(
+            CellCoord::from_a1("A1").unwrap(),
+            CellValue::Text("Quarter".into()),
+        );
+        sheet.set_cell_value(
+            CellCoord::from_a1("B1").unwrap(),
+            CellValue::Text("Revenue".into()),
+        );
+        sheet.set_cell_value(
+            CellCoord::from_a1("A2").unwrap(),
+            CellValue::Text("Q1".into()),
+        );
+        sheet.set_cell_value(
+            CellCoord::from_a1("B2").unwrap(),
+            CellValue::Number(25000.0),
+        );
+        sheet.set_cell_value(
+            CellCoord::from_a1("A3").unwrap(),
+            CellValue::Text("Q2".into()),
+        );
+        sheet.set_cell_value(
+            CellCoord::from_a1("B3").unwrap(),
+            CellValue::Number(31000.5),
+        );
         sheet.set_cell_formula(
             CellCoord::from_a1("B4").unwrap(),
             "SUM(B2:B3)".to_string(),
@@ -514,7 +536,11 @@ mod tests {
             .with_font(Font::default().with_bold(true))
             .with_number_format(NumberFormat::currency("$", 2));
         let cur_id = styles.get_or_insert(bold_currency);
-        sheet.cells.get_mut(CellCoord::from_a1("B4").unwrap()).unwrap().style_id = cur_id;
+        sheet
+            .cells
+            .get_mut(CellCoord::from_a1("B4").unwrap())
+            .unwrap()
+            .style_id = cur_id;
 
         // Write to buffer
         let bytes = write_xlsx_bytes(&wb, Some(&styles)).unwrap();
@@ -540,7 +566,9 @@ mod tests {
             CellValue::Number(31000.5)
         );
 
-        let b4 = rt_sheet.get_cell(CellCoord::from_a1("B4").unwrap()).unwrap();
+        let b4 = rt_sheet
+            .get_cell(CellCoord::from_a1("B4").unwrap())
+            .unwrap();
         assert_eq!(b4.formula, Some("SUM(B2:B3)".to_string()));
     }
 
@@ -576,5 +604,194 @@ mod tests {
         assert_eq!(scan.macro_parts, vec!["xl/vbaProject.bin"]);
         assert!(scan.warning.is_some());
         assert!(scan.warning.unwrap().contains("Security Alert"));
+    }
+
+    #[test]
+    fn test_multi_sheet_workbooks_roundtrip() {
+        let mut wb = Workbook::new();
+        let s1 = wb.add_sheet("Summary").unwrap();
+        let s2 = wb.add_sheet("Q1_Data").unwrap();
+        let s3 = wb.add_sheet("Q2_Data").unwrap();
+
+        wb.get_sheet_mut(&s1).unwrap().set_cell_value(
+            CellCoord::must_new(1, 1),
+            CellValue::Text("Total Revenue".into()),
+        );
+        wb.get_sheet_mut(&s2)
+            .unwrap()
+            .set_cell_value(CellCoord::must_new(2, 3), CellValue::Number(12500.75));
+        wb.get_sheet_mut(&s3)
+            .unwrap()
+            .set_cell_value(CellCoord::must_new(4, 5), CellValue::Number(34000.25));
+
+        let bytes = write_xlsx_bytes(&wb, None).unwrap();
+        let loaded = read_xlsx_bytes(&bytes).unwrap();
+
+        assert_eq!(loaded.sheets.len(), 3);
+        assert_eq!(loaded.sheets[0].name, "Summary");
+        assert_eq!(loaded.sheets[1].name, "Q1_Data");
+        assert_eq!(loaded.sheets[2].name, "Q2_Data");
+
+        assert_eq!(
+            loaded.sheets[0].get_cell_value(CellCoord::must_new(1, 1)),
+            CellValue::Text("Total Revenue".into())
+        );
+        assert_eq!(
+            loaded.sheets[1].get_cell_value(CellCoord::must_new(2, 3)),
+            CellValue::Number(12500.75)
+        );
+        assert_eq!(
+            loaded.sheets[2].get_cell_value(CellCoord::must_new(4, 5)),
+            CellValue::Number(34000.25)
+        );
+    }
+
+    #[test]
+    fn test_formulas_reading_writing_roundtrip() {
+        let mut wb = Workbook::with_default_sheet();
+        let sheet = wb.active_sheet_mut();
+        sheet.set_cell_value(CellCoord::must_new(1, 1), CellValue::Number(10.0));
+        sheet.set_cell_value(CellCoord::must_new(2, 1), CellValue::Number(20.0));
+        sheet.set_cell_formula(
+            CellCoord::must_new(3, 1),
+            "SUM(A1:A2)".to_string(),
+            CellValue::Number(30.0),
+        );
+        sheet.set_cell_formula(
+            CellCoord::must_new(4, 1),
+            "AVERAGE(A1:A2)".to_string(),
+            CellValue::Number(15.0),
+        );
+
+        let bytes = write_xlsx_bytes(&wb, None).unwrap();
+        let loaded = read_xlsx_bytes(&bytes).unwrap();
+        let active = loaded.active_sheet();
+
+        assert_eq!(
+            active.get_cell_value(CellCoord::must_new(1, 1)),
+            CellValue::Number(10.0)
+        );
+        assert_eq!(
+            active.get_cell_value(CellCoord::must_new(2, 1)),
+            CellValue::Number(20.0)
+        );
+
+        let c3 = active.get_cell(CellCoord::must_new(3, 1)).unwrap();
+        assert_eq!(c3.formula, Some("SUM(A1:A2)".to_string()));
+
+        let c4 = active.get_cell(CellCoord::must_new(4, 1)).unwrap();
+        assert_eq!(c4.formula, Some("AVERAGE(A1:A2)".to_string()));
+    }
+
+    #[test]
+    fn test_empty_and_sparse_large_coordinates() {
+        let mut wb = Workbook::with_default_sheet();
+        let sheet = wb.active_sheet_mut();
+
+        // Write cell at (1, 1) and sparse cell at (500, 200)
+        sheet.set_cell_value(CellCoord::must_new(1, 1), CellValue::Text("Origin".into()));
+        sheet.set_cell_value(
+            CellCoord::must_new(500, 200),
+            CellValue::Text("Distant Island".into()),
+        );
+
+        let bytes = write_xlsx_bytes(&wb, None).unwrap();
+        let loaded = read_xlsx_bytes(&bytes).unwrap();
+        let active = loaded.active_sheet();
+
+        assert_eq!(
+            active.get_cell_value(CellCoord::must_new(1, 1)),
+            CellValue::Text("Origin".into())
+        );
+        assert_eq!(
+            active.get_cell_value(CellCoord::must_new(500, 200)),
+            CellValue::Text("Distant Island".into())
+        );
+        // Ensure sparse representation didn't inflate memory with intermediate cells
+        assert_eq!(active.cells.iter().count(), 2);
+        assert_eq!(
+            active.get_cell_value(CellCoord::must_new(250, 100)),
+            CellValue::Empty
+        );
+    }
+
+    #[test]
+    fn test_unicode_multilingual_and_emojis() {
+        let mut wb = Workbook::with_default_sheet();
+        let sheet = wb.active_sheet_mut();
+
+        let unicode_samples = [
+            ("你好，世界！", CellCoord::must_new(1, 1)),
+            ("こんにちは世界", CellCoord::must_new(2, 1)),
+            ("Привет, мир!", CellCoord::must_new(3, 1)),
+            ("مرحبا بالعالم", CellCoord::must_new(4, 1)),
+            ("🚀📊📈✨🔥", CellCoord::must_new(5, 1)),
+            ("Crème brûlée & résumé", CellCoord::must_new(6, 1)),
+            ("€150.00 / ¥10,000 / £99.99", CellCoord::must_new(7, 1)),
+        ];
+
+        for (text, coord) in &unicode_samples {
+            sheet.set_cell_value(*coord, CellValue::Text((*text).to_string()));
+        }
+
+        let bytes = write_xlsx_bytes(&wb, None).unwrap();
+        let loaded = read_xlsx_bytes(&bytes).unwrap();
+        let active = loaded.active_sheet();
+
+        for (text, coord) in &unicode_samples {
+            assert_eq!(
+                active.get_cell_value(*coord),
+                CellValue::Text((*text).to_string())
+            );
+        }
+    }
+
+    #[test]
+    fn test_styles_and_number_formats_export() {
+        let mut wb = Workbook::with_default_sheet();
+        let sheet = wb.active_sheet_mut();
+
+        let mut styles = StyleTable::new();
+        let bold_currency = CellStyle::default()
+            .with_font(Font::default().with_bold(true))
+            .with_number_format(NumberFormat::currency("$", 2));
+        let cur_id = styles.get_or_insert(bold_currency);
+
+        let italic_percent = CellStyle::default()
+            .with_font(Font::default().with_italic(true))
+            .with_number_format(NumberFormat::percentage(1));
+        let pct_id = styles.get_or_insert(italic_percent);
+
+        sheet.set_cell_value(CellCoord::must_new(1, 1), CellValue::Number(1250.50));
+        sheet
+            .cells
+            .get_mut(CellCoord::must_new(1, 1))
+            .unwrap()
+            .style_id = cur_id;
+
+        sheet.set_cell_value(CellCoord::must_new(2, 1), CellValue::Number(0.854));
+        sheet
+            .cells
+            .get_mut(CellCoord::must_new(2, 1))
+            .unwrap()
+            .style_id = pct_id;
+
+        let bytes = write_xlsx_bytes(&wb, Some(&styles)).unwrap();
+        assert!(!bytes.is_empty());
+        assert_eq!(&bytes[0..4], b"PK\x03\x04");
+
+        let loaded = read_xlsx_bytes(&bytes).unwrap();
+        assert_eq!(
+            loaded
+                .active_sheet()
+                .get_cell_value(CellCoord::must_new(1, 1)),
+            CellValue::Number(1250.50)
+        );
+        assert_eq!(
+            loaded
+                .active_sheet()
+                .get_cell_value(CellCoord::must_new(2, 1)),
+            CellValue::Number(0.854)
+        );
     }
 }

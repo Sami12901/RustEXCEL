@@ -76,8 +76,12 @@ fn print_help() {
     println!("Rust EXCEL CLI - Headless Spreadsheet Processor");
     println!("Usage:");
     println!("  rust-exel-cli recalculate <file> [-o <output>]  Recalculate all formulas in a workbook or CSV");
-    println!("  rust-exel-cli convert <input> <output>         Convert between XLSX, CSV, and formats");
-    println!("  rust-exel-cli info <file>                      Inspect sheet dimensions and statistics");
+    println!(
+        "  rust-exel-cli convert <input> <output>         Convert between XLSX, CSV, and formats"
+    );
+    println!(
+        "  rust-exel-cli info <file>                      Inspect sheet dimensions and statistics"
+    );
     println!("  rust-exel-cli eval \"<formula>\"                  Evaluate a formula directly (e.g. \"=SUM(1, 2, 3)\")");
     println!("  rust-exel-cli --help                           Show this help message");
 }
@@ -111,7 +115,10 @@ fn cmd_recalculate(input: &Path, output: Option<PathBuf>) -> Result<()> {
     recalculate_workbook(&mut wb);
 
     if let Some(out_path) = output {
-        println!("Saving recalculated workbook to '{}'...", out_path.display());
+        println!(
+            "Saving recalculated workbook to '{}'...",
+            out_path.display()
+        );
         let ext = out_path
             .extension()
             .and_then(|e| e.to_str())
@@ -126,7 +133,10 @@ fn cmd_recalculate(input: &Path, output: Option<PathBuf>) -> Result<()> {
         println!("Successfully written to '{}'!", out_path.display());
     } else {
         // Print ASCII summary of active sheet
-        println!("\nRecalculation Complete! Active Sheet Preview ({}):", wb.active_sheet().name);
+        println!(
+            "\nRecalculation Complete! Active Sheet Preview ({}):",
+            wb.active_sheet().name
+        );
         print_sheet_ascii(wb.active_sheet());
     }
 
@@ -134,7 +144,11 @@ fn cmd_recalculate(input: &Path, output: Option<PathBuf>) -> Result<()> {
 }
 
 fn cmd_convert(input: &Path, output: &Path) -> Result<()> {
-    println!("Converting '{}' -> '{}'...", input.display(), output.display());
+    println!(
+        "Converting '{}' -> '{}'...",
+        input.display(),
+        output.display()
+    );
     let wb = load_workbook(input)?;
 
     let out_ext = output
@@ -151,7 +165,10 @@ fn cmd_convert(input: &Path, output: &Path) -> Result<()> {
             write_xlsx(&wb, output)?;
         }
         other => {
-            bail!("Unsupported output format: '.{}'. Supported formats: .csv, .xlsx", other);
+            bail!(
+                "Unsupported output format: '.{}'. Supported formats: .csv, .xlsx",
+                other
+            );
         }
     }
 
@@ -169,10 +186,19 @@ fn cmd_info(input: &Path) -> Result<()> {
     for (idx, sheet) in wb.sheets.iter().enumerate() {
         println!("Sheet #{} : \"{}\"", idx + 1, sheet.name);
         let populated_cells = sheet.cells.len();
-        let formula_count = sheet.cells.iter().filter(|(_, s)| s.formula.is_some()).count();
+        let formula_count = sheet
+            .cells
+            .iter()
+            .filter(|(_, s)| s.formula.is_some())
+            .count();
 
         if let Some(range) = sheet.cells.used_range() {
-            println!("  Used Range: {} ({} rows x {} columns)", range.to_a1(), range.row_count(), range.col_count());
+            println!(
+                "  Used Range: {} ({} rows x {} columns)",
+                range.to_a1(),
+                range.row_count(),
+                range.col_count()
+            );
         } else {
             println!("  Used Range: Empty");
         }
@@ -209,7 +235,13 @@ fn print_sheet_ascii(sheet: &exel_workbook::Worksheet) {
         }
         println!("+------+----------------------------------------------------------+");
         if range.end.row > max_r || range.end.col > max_c {
-            println!("(Showing first {} rows and {} cols out of {} rows x {} cols)", max_r, max_c, range.row_count(), range.col_count());
+            println!(
+                "(Showing first {} rows and {} cols out of {} rows x {} cols)",
+                max_r,
+                max_c,
+                range.row_count(),
+                range.col_count()
+            );
         }
     } else {
         println!("(Sheet is empty)");

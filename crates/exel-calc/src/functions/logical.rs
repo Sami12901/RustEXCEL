@@ -38,7 +38,11 @@ pub fn fn_if(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<Cel
     }
 }
 
-pub fn fn_and(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_and(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.is_empty() {
         return Err(CellError::Value);
     }
@@ -132,7 +136,11 @@ pub fn fn_or(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<Cel
     }
 }
 
-pub fn fn_not(ctx: &CalcContext, args: &[Expression], eval: EvalFn) -> Result<CellValue, CellError> {
+pub fn fn_not(
+    ctx: &CalcContext,
+    args: &[Expression],
+    eval: EvalFn,
+) -> Result<CellValue, CellError> {
     if args.len() != 1 {
         return Err(CellError::Value);
     }

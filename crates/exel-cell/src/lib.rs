@@ -72,11 +72,20 @@ impl CellValue {
                 if n.fract() == 0.0 && n.abs() < 1e15 {
                     format!("{:.0}", n)
                 } else {
-                    format!("{:.4}", n).trim_end_matches('0').trim_end_matches('.').to_string()
+                    format!("{:.4}", n)
+                        .trim_end_matches('0')
+                        .trim_end_matches('.')
+                        .to_string()
                 }
             }
             CellValue::Text(s) => s.clone(),
-            CellValue::Boolean(b) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+            CellValue::Boolean(b) => {
+                if *b {
+                    "TRUE".to_string()
+                } else {
+                    "FALSE".to_string()
+                }
+            }
             CellValue::DateTime(dt) => dt.format("%Y-%m-%d %H:%M:%S").to_string(),
             CellValue::Error(err) => err.as_str().to_string(),
         }
@@ -138,7 +147,10 @@ impl CellState {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.value.is_empty() && self.formula.is_none() && self.style_id == 0 && self.comment.is_none()
+        self.value.is_empty()
+            && self.formula.is_none()
+            && self.style_id == 0
+            && self.comment.is_none()
     }
 }
 

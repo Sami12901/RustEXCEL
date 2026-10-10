@@ -45,9 +45,9 @@ impl SetCellCommand {
 
 impl HistoryCommand<Workbook> for SetCellCommand {
     fn execute(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         if !self.executed {
             self.prev_state = sheet.get_cell(self.coord).cloned();
@@ -59,9 +59,9 @@ impl HistoryCommand<Workbook> for SetCellCommand {
     }
 
     fn undo(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         if let Some(prev) = &self.prev_state {
             sheet.set_cell(self.coord, prev.clone());
@@ -106,9 +106,9 @@ impl SetRangeCommand {
 
 impl HistoryCommand<Workbook> for SetRangeCommand {
     fn execute(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         if !self.executed {
             self.prev_states = self
@@ -126,9 +126,9 @@ impl HistoryCommand<Workbook> for SetRangeCommand {
     }
 
     fn undo(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         for (coord, prev_opt) in &self.prev_states {
             if let Some(prev) = prev_opt {
@@ -171,9 +171,9 @@ impl ClearRangeCommand {
 
 impl HistoryCommand<Workbook> for ClearRangeCommand {
     fn execute(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         if !self.executed {
             self.prev_states.clear();
@@ -220,9 +220,9 @@ impl HistoryCommand<Workbook> for ClearRangeCommand {
     }
 
     fn undo(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         // First clean cleared range
         for r in self.range.start.row..=self.range.end.row {
@@ -271,9 +271,9 @@ impl FormatRangeCommand {
 
 impl HistoryCommand<Workbook> for FormatRangeCommand {
     fn execute(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         if !self.executed {
             self.prev_styles.clear();
@@ -301,16 +301,18 @@ impl HistoryCommand<Workbook> for FormatRangeCommand {
     }
 
     fn undo(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         for (coord, prev_style) in &self.prev_styles {
             if let Some(cell) = sheet.cells.get_mut(*coord) {
                 cell.style_id = *prev_style;
             } else if *prev_style != 0 {
-                let mut state = CellState::default();
-                state.style_id = *prev_style;
+                let state = CellState {
+                    style_id: *prev_style,
+                    ..Default::default()
+                };
                 sheet.set_cell(*coord, state);
             }
         }
@@ -346,9 +348,9 @@ impl InsertRowCommand {
 
 impl HistoryCommand<Workbook> for InsertRowCommand {
     fn execute(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         // Extract cells with row >= self.row
         let to_shift: Vec<(CellCoord, CellState)> = sheet
@@ -375,9 +377,9 @@ impl HistoryCommand<Workbook> for InsertRowCommand {
     }
 
     fn undo(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         let to_shift: Vec<(CellCoord, CellState)> = sheet
             .cells
@@ -431,9 +433,9 @@ impl DeleteRowCommand {
 
 impl HistoryCommand<Workbook> for DeleteRowCommand {
     fn execute(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         let end_del = self.row + self.count - 1;
 
@@ -473,9 +475,9 @@ impl HistoryCommand<Workbook> for DeleteRowCommand {
     }
 
     fn undo(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         // Shift rows that were shifted up back down
         let to_shift: Vec<(CellCoord, CellState)> = sheet
@@ -533,9 +535,9 @@ impl InsertColCommand {
 
 impl HistoryCommand<Workbook> for InsertColCommand {
     fn execute(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         let to_shift: Vec<(CellCoord, CellState)> = sheet
             .cells
@@ -559,9 +561,9 @@ impl HistoryCommand<Workbook> for InsertColCommand {
     }
 
     fn undo(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         let to_shift: Vec<(CellCoord, CellState)> = sheet
             .cells
@@ -615,9 +617,9 @@ impl DeleteColCommand {
 
 impl HistoryCommand<Workbook> for DeleteColCommand {
     fn execute(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         let end_del = self.col + self.count - 1;
 
@@ -655,9 +657,9 @@ impl HistoryCommand<Workbook> for DeleteColCommand {
     }
 
     fn undo(&mut self, wb: &mut Workbook) -> Result<(), HistoryError> {
-        let sheet = wb
-            .get_sheet_mut(&self.sheet_id)
-            .ok_or_else(|| HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id)))?;
+        let sheet = wb.get_sheet_mut(&self.sheet_id).ok_or_else(|| {
+            HistoryError::ExecutionFailed(format!("Sheet not found: {}", self.sheet_id))
+        })?;
 
         let to_shift: Vec<(CellCoord, CellState)> = sheet
             .cells
@@ -708,15 +710,24 @@ mod tests {
         let cmd = SetCellCommand::from_value(sheet_id.clone(), coord, CellValue::Number(100.0));
         history.execute(Box::new(cmd), &mut wb).unwrap();
 
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(coord), CellValue::Number(100.0));
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(coord),
+            CellValue::Number(100.0)
+        );
 
         // Undo
         history.undo(&mut wb).unwrap();
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(coord), CellValue::Empty);
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(coord),
+            CellValue::Empty
+        );
 
         // Redo
         history.redo(&mut wb).unwrap();
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(coord), CellValue::Number(100.0));
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(coord),
+            CellValue::Number(100.0)
+        );
     }
 
     #[test]
@@ -726,20 +737,36 @@ mod tests {
 
         let c1 = CellCoord::from_a1("A1").unwrap();
         let c2 = CellCoord::from_a1("A2").unwrap();
-        wb.get_sheet_mut(&sheet_id).unwrap().set_cell_value(c1, CellValue::Text("First".into()));
-        wb.get_sheet_mut(&sheet_id).unwrap().set_cell_value(c2, CellValue::Text("Second".into()));
+        wb.get_sheet_mut(&sheet_id)
+            .unwrap()
+            .set_cell_value(c1, CellValue::Text("First".into()));
+        wb.get_sheet_mut(&sheet_id)
+            .unwrap()
+            .set_cell_value(c2, CellValue::Text("Second".into()));
 
         let range = CellRange::from_a1("A1:A2").unwrap();
         let cmd = ClearRangeCommand::new(sheet_id.clone(), range, ClearMode::All);
         history.execute(Box::new(cmd), &mut wb).unwrap();
 
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c1), CellValue::Empty);
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c2), CellValue::Empty);
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c1),
+            CellValue::Empty
+        );
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c2),
+            CellValue::Empty
+        );
 
         // Undo restores values
         history.undo(&mut wb).unwrap();
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c1), CellValue::Text("First".into()));
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c2), CellValue::Text("Second".into()));
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c1),
+            CellValue::Text("First".into())
+        );
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c2),
+            CellValue::Text("Second".into())
+        );
     }
 
     #[test]
@@ -749,8 +776,12 @@ mod tests {
 
         let c_row1 = CellCoord::from_a1("A1").unwrap();
         let c_row2 = CellCoord::from_a1("A2").unwrap();
-        wb.get_sheet_mut(&sheet_id).unwrap().set_cell_value(c_row1, CellValue::Number(1.0));
-        wb.get_sheet_mut(&sheet_id).unwrap().set_cell_value(c_row2, CellValue::Number(2.0));
+        wb.get_sheet_mut(&sheet_id)
+            .unwrap()
+            .set_cell_value(c_row1, CellValue::Number(1.0));
+        wb.get_sheet_mut(&sheet_id)
+            .unwrap()
+            .set_cell_value(c_row2, CellValue::Number(2.0));
 
         // Insert row at 2
         let insert_cmd = InsertRowCommand::new(sheet_id.clone(), 2, 1);
@@ -758,22 +789,43 @@ mod tests {
 
         // A1 stays 1.0, A2 is empty, A3 becomes 2.0
         let c_row3 = CellCoord::from_a1("A3").unwrap();
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row1), CellValue::Number(1.0));
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row2), CellValue::Empty);
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row3), CellValue::Number(2.0));
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row1),
+            CellValue::Number(1.0)
+        );
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row2),
+            CellValue::Empty
+        );
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row3),
+            CellValue::Number(2.0)
+        );
 
         // Delete row at 2
         let del_cmd = DeleteRowCommand::new(sheet_id.clone(), 2, 1);
         history.execute(Box::new(del_cmd), &mut wb).unwrap();
 
         // Now A1 is 1.0, A2 is 2.0
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row1), CellValue::Number(1.0));
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row2), CellValue::Number(2.0));
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row1),
+            CellValue::Number(1.0)
+        );
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row2),
+            CellValue::Number(2.0)
+        );
 
         // Undo Delete Row restores A3 as 2.0 and A2 as empty
         history.undo(&mut wb).unwrap();
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row2), CellValue::Empty);
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row3), CellValue::Number(2.0));
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row2),
+            CellValue::Empty
+        );
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_row3),
+            CellValue::Number(2.0)
+        );
     }
 
     #[test]
@@ -783,22 +835,38 @@ mod tests {
 
         let c_a1 = CellCoord::from_a1("A1").unwrap();
         let c_b1 = CellCoord::from_a1("B1").unwrap();
-        wb.get_sheet_mut(&sheet_id).unwrap().set_cell_value(c_a1, CellValue::Number(10.0));
-        wb.get_sheet_mut(&sheet_id).unwrap().set_cell_value(c_b1, CellValue::Number(20.0));
+        wb.get_sheet_mut(&sheet_id)
+            .unwrap()
+            .set_cell_value(c_a1, CellValue::Number(10.0));
+        wb.get_sheet_mut(&sheet_id)
+            .unwrap()
+            .set_cell_value(c_b1, CellValue::Number(20.0));
 
         // Insert 1 column at B (col 2)
         let ins_cmd = InsertColCommand::new(sheet_id.clone(), 2, 1);
         history.execute(Box::new(ins_cmd), &mut wb).unwrap();
 
         let c_c1 = CellCoord::from_a1("C1").unwrap();
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_a1), CellValue::Number(10.0));
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_b1), CellValue::Empty);
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_c1), CellValue::Number(20.0));
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_a1),
+            CellValue::Number(10.0)
+        );
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_b1),
+            CellValue::Empty
+        );
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_c1),
+            CellValue::Number(20.0)
+        );
 
         // Delete column at B (col 2)
         let del_cmd = DeleteColCommand::new(sheet_id.clone(), 2, 1);
         history.execute(Box::new(del_cmd), &mut wb).unwrap();
 
-        assert_eq!(wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_b1), CellValue::Number(20.0));
+        assert_eq!(
+            wb.get_sheet(&sheet_id).unwrap().get_cell_value(c_b1),
+            CellValue::Number(20.0)
+        );
     }
 }

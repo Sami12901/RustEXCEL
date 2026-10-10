@@ -102,9 +102,11 @@ fn test_cross_sheet_subgraph_recalc() {
     graph.set_dependencies(s2_b1.clone(), vec![s1_a1.clone()]);
     graph.set_dependencies(s3_c1.clone(), vec![s2_b1.clone()]);
 
-    let affected = graph.get_affected_nodes(&[s1_a1.clone()]);
+    let affected = graph.get_affected_nodes(std::slice::from_ref(&s1_a1));
     assert_eq!(affected.len(), 3);
 
-    let recalc = graph.ordered_recalc_subgraph(&[s1_a1.clone()]).unwrap();
+    let recalc = graph
+        .ordered_recalc_subgraph(std::slice::from_ref(&s1_a1))
+        .unwrap();
     assert_eq!(recalc, vec![s1_a1, s2_b1, s3_c1]);
 }

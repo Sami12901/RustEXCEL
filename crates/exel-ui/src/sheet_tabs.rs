@@ -89,11 +89,9 @@ impl<'a> SheetTabsBar<'a> {
                                 self.state.rename_buffer = sheet.name.clone();
                                 ui.close();
                             }
-                            if self.workbook.sheet_count() > 1 {
-                                if ui.button("Delete").clicked() {
-                                    actions.push(SpreadsheetAction::DeleteSheet(sheet_id.clone()));
-                                    ui.close();
-                                }
+                            if self.workbook.sheet_count() > 1 && ui.button("Delete").clicked() {
+                                actions.push(SpreadsheetAction::DeleteSheet(sheet_id.clone()));
+                                ui.close();
                             }
                         });
                     }
@@ -101,7 +99,11 @@ impl<'a> SheetTabsBar<'a> {
 
                 // Add Sheet (+) Button
                 if ui
-                    .button(RichText::new(" ➕ ").strong().color(SpreadsheetTheme::EXCEL_GREEN))
+                    .button(
+                        RichText::new(" ➕ ")
+                            .strong()
+                            .color(SpreadsheetTheme::EXCEL_GREEN),
+                    )
                     .on_hover_text("Insert Worksheet")
                     .clicked()
                 {
@@ -169,20 +171,14 @@ impl<'a> SheetTabsBar<'a> {
                         self.state.view_mode = ViewMode::Normal;
                     }
                     if ui
-                        .selectable_label(
-                            self.state.view_mode == ViewMode::PageLayout,
-                            "📄",
-                        )
+                        .selectable_label(self.state.view_mode == ViewMode::PageLayout, "📄")
                         .on_hover_text("Page Layout View")
                         .clicked()
                     {
                         self.state.view_mode = ViewMode::PageLayout;
                     }
                     if ui
-                        .selectable_label(
-                            self.state.view_mode == ViewMode::PageBreakPreview,
-                            "✂",
-                        )
+                        .selectable_label(self.state.view_mode == ViewMode::PageBreakPreview, "✂")
                         .on_hover_text("Page Break Preview")
                         .clicked()
                     {

@@ -7,5 +7,11 @@ license.workspace = true
 
 [dependencies]
 exel-core.workspace = true
+exel-cell.workspace = true
+exel-workbook.workspace = true
+exel-calc.workspace = true
+exel-csv.workspace = true
+exel-xlsx.workspace = true
 serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true

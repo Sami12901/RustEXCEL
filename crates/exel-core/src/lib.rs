@@ -75,9 +75,7 @@ impl CellCoord {
         }
 
         let col = name_to_col(&col_str)?;
-        let row: u32 = row_str
-            .parse()
-            .map_err(|_| CoreError::InvalidRow(0))?;
+        let row: u32 = row_str.parse().map_err(|_| CoreError::InvalidRow(0))?;
 
         Self::new(row, col)
     }
@@ -111,9 +109,10 @@ pub fn name_to_col(name: &str) -> Result<u32, CoreError> {
             return Err(CoreError::InvalidColumnName(name.to_string()));
         }
         let val = (ch.to_ascii_uppercase() as u32) - ('A' as u32) + 1;
-        col = col.checked_mul(26).and_then(|c| c.checked_add(val)).ok_or_else(|| {
-            CoreError::InvalidColumnName(name.to_string())
-        })?;
+        col = col
+            .checked_mul(26)
+            .and_then(|c| c.checked_add(val))
+            .ok_or_else(|| CoreError::InvalidColumnName(name.to_string()))?;
     }
     if col == 0 || col > MAX_COLS {
         return Err(CoreError::InvalidColumn(col));
@@ -135,13 +134,22 @@ impl CellRange {
         let min_col = c1.col.min(c2.col);
         let max_col = c1.col.max(c2.col);
         Self {
-            start: CellCoord { row: min_row, col: min_col },
-            end: CellCoord { row: max_row, col: max_col },
+            start: CellCoord {
+                row: min_row,
+                col: min_col,
+            },
+            end: CellCoord {
+                row: max_row,
+                col: max_col,
+            },
         }
     }
 
     pub fn single_cell(coord: CellCoord) -> Self {
-        Self { start: coord, end: coord }
+        Self {
+            start: coord,
+            end: coord,
+        }
     }
 
     pub fn contains(&self, coord: CellCoord) -> bool {

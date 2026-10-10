@@ -15,13 +15,13 @@ pub enum TokenKind {
     CellRef(CellRef),
 
     // Operators
-    Plus,       // +
-    Minus,      // -
-    Star,       // *
-    Slash,      // /
-    Caret,      // ^
-    Ampersand,  // &
-    Percent,    // %
+    Plus,      // +
+    Minus,     // -
+    Star,      // *
+    Slash,     // /
+    Caret,     // ^
+    Ampersand, // &
+    Percent,   // %
 
     // Comparisons
     Equal,        // =
