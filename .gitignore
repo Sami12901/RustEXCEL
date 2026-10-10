@@ -1,0 +1,18 @@
+# Rust Build Artifacts
+/target
+Cargo.lock
+
+# Operating System Files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor & IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local Logs & Dumps
+*.log
+*.tmp

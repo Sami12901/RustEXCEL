@@ -1,0 +1,24 @@
+[package]
+name = "rust-exel"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+exel-core.workspace = true
+exel-cell.workspace = true
+exel-workbook.workspace = true
+exel-formatting.workspace = true
+exel-shortcuts.workspace = true
+exel-ui.workspace = true
+eframe.workspace = true
+egui.workspace = true
+rfd.workspace = true
+arboard.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+csv.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+image = { version = "0.25", default-features = false, features = ["png"] }

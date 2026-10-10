@@ -1,0 +1,89 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/exel-core",
+    "crates/exel-cell",
+    "crates/exel-workbook",
+    "crates/exel-dependency-graph",
+    "crates/exel-formula",
+    "crates/exel-calc",
+    "crates/exel-formatting",
+    "crates/exel-tables",
+    "crates/exel-validation",
+    "crates/exel-history",
+    "crates/exel-commands",
+    "crates/exel-clipboard",
+    "crates/exel-io",
+    "crates/exel-csv",
+    "crates/exel-xlsx",
+    "crates/exel-charts",
+    "crates/exel-pivot",
+    "crates/exel-data",
+    "crates/exel-print",
+    "crates/exel-shortcuts",
+    "crates/exel-ui",
+    "crates/exel-automation",
+    "apps/rust-exel",
+    "apps/rust-exel-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85.0"
+authors = ["Rust EXEL Team"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rust-exel/rust-exel"
+
+[workspace.dependencies]
+# Serialization & Utilities
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+thiserror = "2.0.12"
+anyhow = "1.0.97"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tempfile = "3.18.0"
+chrono = { version = "0.4.40", default-features = false, features = ["serde", "std"] }
+regex = "1.11.1"
+
+# Spreadsheet & File Formats
+calamine = "0.36.1"
+rust_xlsxwriter = "0.99.1"
+csv = "1.3.1"
+
+# GUI & Desktop Integration
+egui = "0.36.2"
+eframe = { version = "0.36.2", default-features = false, features = ["default_fonts", "glow", "wgpu", "x11", "wayland"] }
+egui_extras = { version = "0.36.2", features = ["all_loaders"] }
+arboard = "3.4.1"
+rfd = "0.15.3"
+
+# Internal Workspace Crates
+exel-core = { path = "crates/exel-core" }
+exel-cell = { path = "crates/exel-cell" }
+exel-workbook = { path = "crates/exel-workbook" }
+exel-dependency-graph = { path = "crates/exel-dependency-graph" }
+exel-formula = { path = "crates/exel-formula" }
+exel-calc = { path = "crates/exel-calc" }
+exel-formatting = { path = "crates/exel-formatting" }
+exel-tables = { path = "crates/exel-tables" }
+exel-validation = { path = "crates/exel-validation" }
+exel-history = { path = "crates/exel-history" }
+exel-commands = { path = "crates/exel-commands" }
+exel-clipboard = { path = "crates/exel-clipboard" }
+exel-io = { path = "crates/exel-io" }
+exel-csv = { path = "crates/exel-csv" }
+exel-xlsx = { path = "crates/exel-xlsx" }
+exel-charts = { path = "crates/exel-charts" }
+exel-pivot = { path = "crates/exel-pivot" }
+exel-data = { path = "crates/exel-data" }
+exel-print = { path = "crates/exel-print" }
+exel-shortcuts = { path = "crates/exel-shortcuts" }
+exel-ui = { path = "crates/exel-ui" }
+exel-automation = { path = "crates/exel-automation" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1

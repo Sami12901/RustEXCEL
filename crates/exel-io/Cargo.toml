@@ -1,0 +1,13 @@
+[package]
+name = "exel-io"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+exel-core.workspace = true
+exel-workbook.workspace = true
+tempfile.workspace = true
+serde.workspace = true
+thiserror.workspace = true

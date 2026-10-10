@@ -1,0 +1,16 @@
+[package]
+name = "rust-exel-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+exel-core.workspace = true
+exel-cell.workspace = true
+exel-workbook.workspace = true
+exel-formatting.workspace = true
+csv.workspace = true
+calamine.workspace = true
+rust_xlsxwriter.workspace = true
+anyhow.workspace = true

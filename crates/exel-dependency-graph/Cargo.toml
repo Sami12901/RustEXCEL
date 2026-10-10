@@ -1,0 +1,11 @@
+[package]
+name = "exel-dependency-graph"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+exel-core.workspace = true
+serde.workspace = true
+thiserror.workspace = true

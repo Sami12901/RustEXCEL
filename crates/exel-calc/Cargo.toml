@@ -1,0 +1,15 @@
+[package]
+name = "exel-calc"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+exel-core.workspace = true
+exel-cell.workspace = true
+exel-workbook.workspace = true
+exel-dependency-graph.workspace = true
+exel-formula.workspace = true
+serde.workspace = true
+thiserror.workspace = true
